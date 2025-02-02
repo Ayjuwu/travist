@@ -1,0 +1,26 @@
+<?php
+    namespace App\Controllers;
+    use App\Models\Keypoint;
+    use App\Models\Tag;
+
+    class KeyPointsListController extends BaseController {
+        public function index() {
+            $data['title']= "Liste des lieux - Travist";
+            $data['keypoints'] = Keypoint::all();
+            $data['tags'] = Tag::all();
+            
+
+            echo view('includes/header_view', $data);
+            echo view('listKeyPoints');
+            echo view('includes/footer');
+        }
+
+        public function delete(int $id) {
+            $keypoint = Keypoint::find($id);
+
+            $keypoint->tags()->detach();
+            $keypoint->delete();
+
+            return redirect()->to(base_url() . 'liste_des_lieux');
+        }
+    }
