@@ -3,7 +3,7 @@
     use App\Models\Keypoint;
     use App\Models\Tag;
 
-    class KeyPointsListController extends BaseController {
+    class lieuxController extends BaseController {
         public function index() {
             $data['title']= "Liste des lieux - Travist";
             $data['keypoints'] = Keypoint::all();

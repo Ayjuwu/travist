@@ -2,7 +2,7 @@
     namespace App\Controllers;
     use CodeIgniter\Controller;
 
-    class profileController extends BaseController {
+    class profilController extends BaseController {
         public function index() {
             helper(['form']);
             $session = session();

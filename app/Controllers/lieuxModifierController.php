@@ -3,7 +3,7 @@
     use App\Models\Keypoint;
     use App\Models\Tag;
 
-    class KeyPointModifyController extends BaseController {
+    class lieuxModifierController extends BaseController {
         public function index(int $id) {
             helper(['form']);
 

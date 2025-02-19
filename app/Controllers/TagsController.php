@@ -2,7 +2,7 @@
     namespace App\Controllers;
     use App\Models\Tag;
 
-    class TagsListController extends BaseController {
+    class TagsController extends BaseController {
         function index() {
             $data['title'] = "Liste des tags - Travist";
             $data['tags'] = Tag::all();

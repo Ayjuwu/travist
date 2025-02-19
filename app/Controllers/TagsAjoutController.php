@@ -2,7 +2,7 @@
     namespace App\Controllers;
     use App\Models\Tag;
 
-    class TagAddController extends BaseController {
+    class TagsAjoutController extends BaseController {
         function index() {
             helper(['form']);
             $data['title']= "Créer un nouveau tag - Travist";
