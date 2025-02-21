@@ -13,7 +13,6 @@
         }
 
         public function createTag() {
-            helper(['form']);
             $rule = ['tag_name' => 'required|min_length[2]|max_length[20]|is_unique[tags.tag_name]|alpha',];
 
             if ($this->validate($rule)) {

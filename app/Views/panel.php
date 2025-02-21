@@ -11,7 +11,7 @@
                 <h4> Créer un nouveau lieu </h4>
             </a>
 
-            <a href="<?php echo base_url() . 'liste_des_tags';?>" class="card" id="create_card">
+            <a href="<?php echo base_url() . 'liste_des_tags';?>" class="card" id="list_card">
                 <h4> Voir la liste des tags </h4>
             </a>
 

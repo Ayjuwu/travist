@@ -16,6 +16,7 @@
                     </span>
 
                     <button type="submit" class="submitBtn" name="submit_login"> Se connecter </button>
+                    <a href="<?php echo base_url().'inscription'; ?>" class="link"> Inscrivez-vous ici </a>
                 </form>
             </div>
 
