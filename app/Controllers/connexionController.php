@@ -24,7 +24,7 @@
                 $authenticatePassword = password_verify($user_password, $password);
                 if ($authenticatePassword) {
                     $session_data = [
-                        'user_id' => $user->user_id,
+                        'user_id' => $user->id,
                         'user_name' => $user->user_name,
                         'user_email' => $user->user_email,
                         'isLoggedIn' => TRUE

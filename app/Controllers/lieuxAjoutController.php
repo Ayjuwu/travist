@@ -16,8 +16,6 @@
         }
 
         public function createKeyPoint() {
-            helper(['form']);
-
             $rules = [
                 'key_point_name' => 'required|min_length[3]|max_length[40]|is_unique[keypoints.key_point_name]|alpha_space',
                 'key_point_price' => 'required|decimal',
@@ -43,7 +41,7 @@
 
                 $tags = $this->request->getVar('tags');
 
-                foreach ($tags as $tags => $id) {
+                foreach ($tags as $tag => $id) {
                     $key_point->tags()->attach($id, ['tag_id' => $id]);
                 }
 

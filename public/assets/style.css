@@ -360,6 +360,38 @@ select {
     font-weight: 600;
 }
 
+/* .carrousel {
+    width: 80%;
+    max-width: 600px;
+    overflow: hidden;
+    position: relative;
+}
+
+.carrousel-inner {
+    display: flex;
+    width: 200%; 
+    animation: defilement 20s linear infinite; 
+}
+
+.carrousel-item {
+    flex: 1 0 100%;
+    box-sizing: border-box;
+}
+
+.carrousel-item img {
+    width: 100%;
+    display: block;
+}
+
+@keyframes defilement {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+} */
+
 @keyframes appear_down {
     100% {
         top: 150%;

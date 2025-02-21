@@ -4,7 +4,7 @@
             <img src="<?php echo base_url() . 'pictures/no_travel_icon.png'?>" alt="no travel found">
             <p class="no_travel_text"> Vous n'avez aucun voyage programmé. </p>
 
-            <a href="<?=base_url()?>planifer_un_voyage" class="addTravelBtn"> Planifier un nouveau voyage </a>
+            <a href="<?=base_url()?>planifier_un_voyage" class="addTravelBtn"> Planifier un nouveau voyage </a>
         </div>
     </body>
 </html>

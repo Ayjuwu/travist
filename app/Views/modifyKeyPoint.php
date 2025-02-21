@@ -31,7 +31,7 @@
 
                     <span>
                         <label for="key_point_cover"> Image du lieu : </label>
-                        <input type="text" name="key_point_cover" id="key_point_cover" value="<?= $current_keypoint->key_point_cover ?>">
+                        <input type="file" id="key_point_cover" name="key_point_cover" value="<?= set_value('key_point_cover') ?>" accept="image/png, image/jpeg" />
                     </span>
 
                     <span>
@@ -64,16 +64,15 @@
 
     <script>
         const addTagBtn = document.getElementById('addTagBtn');
-        const selectBox= document.getElementById('selectBox');
+        const selectBox = document.getElementById('selectBox');
         
         const select = document.createElement('select');
 
-        $(document).ready(function() {
-            $(addTagBtn).click(function() {
-                
-                $(select).appendTo(selectBox);
+        document.addEventListener('DOMContentLoaded', () => {
+            addTagBtn.addEventListener('click', () => {
+                selectBox.appendChild(select);
                 selectBox.insertAdjacentElement('beforeEnd', addTagBtn);
-                
+
                 select.outerHTML = `
                     <select name='tags[]'>
                         <option selected disabled hidden> Choisissez un tag : </option>
@@ -82,6 +81,6 @@
                         endforeach; ?>
                     </select>
                 `;
-            });
+            })
         });
     </script>

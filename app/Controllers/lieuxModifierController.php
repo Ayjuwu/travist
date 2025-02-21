@@ -43,7 +43,7 @@
                     $key_point->key_point_start_date = $this->request->getVar('key_point_start_date');
                     $key_point->key_point_end_date = $this->request->getVar('key_point_end_date');
                     $key_point->key_point_nearest_city = $this->request->getVar('key_point_nearest_city');
-                    $key_point->key_point_cover = $this->request->getVar('key_point_cover');
+                    $key_point->key_point_cover = base64_encode($this->request->getVar('key_point_cover'));
                     $key_point->key_point_gps_location = $this->request->getVar('key_point_gps_location');
     
                     $key_point->save();
