@@ -33,7 +33,6 @@
                     'key_point_start_date' => 'required|min_length[10]|max_length[10]|valid_date',
                     'key_point_end_date' => 'required|min_length[10]|max_length[10]|valid_date',
                     'key_point_nearest_city' => 'required|min_length[1]|max_length[75]|alpha_space',
-                    'key_point_cover' => 'required|max_length[20000]',
                     'key_point_gps_location' => 'required|max_length[200]'
                 ];
     
@@ -43,8 +42,14 @@
                     $key_point->key_point_start_date = $this->request->getVar('key_point_start_date');
                     $key_point->key_point_end_date = $this->request->getVar('key_point_end_date');
                     $key_point->key_point_nearest_city = $this->request->getVar('key_point_nearest_city');
-                    $key_point->key_point_cover = base64_encode($this->request->getVar('key_point_cover'));
                     $key_point->key_point_gps_location = $this->request->getVar('key_point_gps_location');
+
+                    $image = $this->request->getFile('key_point_cover');
+
+                    $imageData = file_get_contents($image->getTempName());
+                    $base64Image = base64_encode($imageData);
+
+                    $key_point->key_point_cover = $base64Image;
     
                     $key_point->save();
                     $key_point->tags()->detach();

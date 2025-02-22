@@ -3,7 +3,7 @@
     use App\Models\Travel;
     use App\Models\Keypoint;
     
-    class VoyageAjoutController extends BaseController {
+    class VoyageController extends BaseController {
         function index() {
             helper(['form']);
 
@@ -51,5 +51,14 @@
                 $data['validation'] = $this->validator;
                 $this->index();
             }
+        }
+
+        public function delete(int $id) {
+            $travel = Travel::find($id);
+
+            $travel->keypoints()->detach();
+            $travel->delete();
+
+            return redirect()->to(base_url() . 'profil');
         }
     }

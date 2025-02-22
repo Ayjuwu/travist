@@ -1,6 +1,6 @@
 <?= \Config\Services::validation()->listErrors() ?>
         <div id="modal">
-                <form action="<?php echo base_url() . "modifier_un_lieu/modify/$current_keypoint->id"; ?>" method="POST" name="keyPointForm">
+                <form action="<?php echo base_url() . "modifier_un_lieu/modify/$current_keypoint->id"; ?>" method="POST" name="keyPointForm" enctype="multipart/form-data">
                     <h4 class="title_form"> Modifier un lieu </h4>
 
                     <?= csrf_field() ?>
@@ -31,7 +31,7 @@
 
                     <span>
                         <label for="key_point_cover"> Image du lieu : </label>
-                        <input type="file" id="key_point_cover" name="key_point_cover" value="<?= set_value('key_point_cover') ?>" accept="image/png, image/jpeg" />
+                        <input type="file" id="key_point_cover" name="key_point_cover" value="<?= set_value('key_point_cover') ?>" accept="image/*" />
                     </span>
 
                     <span>

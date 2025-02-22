@@ -15,17 +15,22 @@
                 <input type="hidden" name="userID" id="userID" value="<?= set_value('userID', $userID) ?>">
             </span>
 
-            <!-- <div class="carrousel">
-                <div class="carrousel-inner">
+            <span class="carrousel-span">
+                <div class="carrousel">
+                    <?php foreach ($keypoints as $keypoint) {
+                        echo "<a href='" . base_url() . 'voir_plus/' . $keypoint->key_point_name . "'>
+                                <img src='data:image/jpeg;base64, $keypoint->key_point_cover' alt='$keypoint->key_point_name' class='carrousel-image'>
+                            </a>";
+                    } ?>
                 </div>
-            </div> -->
+            </span>
 
             <span class="select_box" id="selectBox">
                 <label> Choisir un lieux : </label>
                 <select name='keypoints[]'> 
                     <option selected disabled hidden> Choisissez un lieux : </option>
                     <?php foreach ($keypoints as $keypoint) :
-                        echo "<option value='$keypoint->id'>$keypoint->key_point_name</option>";
+                        echo "<option value='$keypoint->id'>$keypoint->key_point_name </option>";
                     endforeach; ?>
                 </select>
                 <button type="button" id="addKpBtn"> + </button>
@@ -56,27 +61,21 @@
             select.outerHTML = `
                 <select name='keypoints[]'>
                     <option selected disabled hidden> Choisissez un lieux : </option>
-                    <?php foreach ($keypoints as $keypoint) :
+                    <?php foreach ($keypoints as $keypoint) { 
                         echo "<option value='$keypoint->id'>$keypoint->key_point_name</option>";
-                    endforeach; ?>
+                    } ?>
                 </select>
             `;
         })
 
-        // const carrouselInner = document.querySelector('.carrousel-inner');
-        // const carrouselItems = document.querySelectorAll('.carrousel-item');
-        // let currentIndex = 0;
+        const links = document.querySelectorAll('.carrousel a');
 
-        // function moveToNextSlide() {
-        //     currentIndex = (currentIndex + 1) % carrouselItems.length;
-        //     updateCarrousel();
-        // }
-
-        // function updateCarrousel() {
-        //     const offset = -currentIndex * 100;
-        //     carrouselInner.style.transform = `translateX(${offset}%)`;
-        // }
-
-        // setInterval(moveToNextSlide, 3000); // Change de slide toutes les 3 secondes
+        links.forEach(link => {
+            link.addEventListener('click', function(event) {
+                event.preventDefault(); // Empêche le comportement par défaut du lien
+                const imageSrc = link.querySelector('img').src;
+                alert(`Vous avez cliqué sur l'image : ${imageSrc}`); // Exemple d'action
+            });
+        });
     });
     </script>

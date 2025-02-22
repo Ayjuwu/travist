@@ -52,7 +52,9 @@ $routes->get('/liste_des_tags/delete/(:num)', 'TagsController::delete/$1', ['fil
 $routes->get('/modifier_un_tag/(:num)', 'TagsModifierController::index/$1', ['filter' => 'FiltreAdmin']);
 $routes->post('/modifier_un_tag/modify/(:num)', 'TagsModifierController::modify/$1', ['filter' => 'FiltreAdmin']);
 
-/* VoyageAjoutController */
+/* VoyageController */
 
-$routes->get('/planifier_un_voyage', 'VoyageAjoutController::index', ['filter' => 'FiltreUser']);
-$routes->post('/createTravel', 'VoyageAjoutController::createTravel', ['filter' => 'FiltreUser']);
+$routes->get('/planifier_un_voyage', 'VoyageController::index', ['filter' => 'FiltreUser']);
+$routes->post('/createTravel', 'VoyageController::createTravel', ['filter' => 'FiltreUser']);
+
+$routes->get('profil/delete/(:num)', 'VoyageController::delete/$1', ['filter' => 'FiltreUser']);

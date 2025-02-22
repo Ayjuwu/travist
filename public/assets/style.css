@@ -41,6 +41,8 @@ header {
     flex-direction: column;
     align-items: center;
     gap: 30px;
+    max-width: 1200px; /* Limiter la largeur du contenu */
+    margin: 0 auto; /* Centrer le contenu */
 }
 
 h1, h2, h3, h4 {
@@ -148,17 +150,15 @@ a {
 }
 
 #modal {
-    padding: 2em .5em;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    padding: 2em 1em;
+    position: relative; /* Changer de fixed à relative */
+    margin: 2em auto; /* Centrer horizontalement et ajouter une marge */
     display: grid;
     place-items: center;
-    width: 40%;
-    min-height: 80%;
+    width: 90%; /* Largeur par défaut pour les petits écrans */
+    min-height: 60%;
     background-color: var(--second-dark-color);
-    border-radius: 3em;
+    border-radius: 2em;
     transition: 1.5s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
@@ -166,12 +166,13 @@ a {
     padding: 2em;
     display: flex;
     flex-direction: column;
-    gap: 2em;
-    width: 85%;
+    gap: 1.5em;
+    width: 90%;
     height: 100%;
     background-color: var(--main-light-color);
-    border-radius: 2em;
+    border-radius: 1.5em;
     box-shadow: 0 0 50px var(--main-dark-color);
+    overflow: hidden;
 }
 
 .title_form {
@@ -277,23 +278,31 @@ select {
     scale: 1;
 }
 
-.items_box {
-    padding: 1em;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 2em;
-    width: 100%;
-}
-
 .card {
     position: relative;
     padding: 2em;
     display: flex;
     flex-direction: column;
-    gap: .5em;
-    min-width: 500px;
+    gap: 1em;
     background-color: var(--second-dark-color);
     border-radius: 1em;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px); /* Effet de levée au survol */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* Disposition des cartes dans .items_box */
+.items_box {
+    display: grid;
+    grid-template-columns: repeat(minmax(300px, 1fr)); /* Cartes responsives */
+    gap: 2em; /* Espacement entre les cartes */
+    width: 100%;
+    max-width: 800px; /* Limiter la largeur du conteneur */
+    margin: 0 auto; /* Centrer le conteneur */
 }
 
 #list_card, #create_card {
@@ -360,42 +369,107 @@ select {
     font-weight: 600;
 }
 
-/* .carrousel {
-    width: 80%;
-    max-width: 600px;
-    overflow: hidden;
+.carrousel-span {
     position: relative;
-}
-
-.carrousel-inner {
-    display: flex;
-    width: 200%; 
-    animation: defilement 20s linear infinite; 
-}
-
-.carrousel-item {
-    flex: 1 0 100%;
-    box-sizing: border-box;
-}
-
-.carrousel-item img {
+    display: block; /* Permet au span de se comporter comme un bloc */
     width: 100%;
-    display: block;
+    overflow: hidden;
+    height: 300px;
 }
 
-@keyframes defilement {
+.carrousel {
+    display: flex;
+    gap: 2em;
+    width: max-content; /* Permet au carrousel de s'étendre en fonction du nombre d'images */
+    height: 100%;
+    animation: slide 28s linear infinite; /* Animation lente et continue */
+}
+
+.carrousel a {
+    display: block; /* Assure que la balise <a> se comporte comme un bloc */
+    width: 300px; /* Largeur fixe pour chaque lien */
+    height: 100%;
+    flex-shrink: 0;
+    text-decoration: none; /* Supprime le soulignement des liens */
+}
+
+.carrousel-image {
+    width: 100%; /* L'image remplit la balise <a> */
+    height: 100%;
+    object-fit: cover; /* Redimensionne l'image pour couvrir l'espace */
+    border-radius: 2em;
+}
+
+@keyframes slide {
     0% {
         transform: translateX(0);
     }
     100% {
-        transform: translateX(-50%);
+        transform: translateX(-100%); /* Défilement complet */
     }
-} */
+}
 
 @keyframes appear_down {
     100% {
         top: 150%;
         opacity: 1;
         pointer-events: all;
+    }
+}
+
+@media (max-width: 768px) {
+    .content_box {
+        padding: 2em; /* Réduire le padding pour les petits écrans */
+    }
+
+    h2 {
+        font-size: 2em; /* Réduire la taille de la police */
+    }
+
+    h3 {
+        font-size: 1.5em;
+    }
+
+    #modal {
+        width: 90%; /* La modale prend presque toute la largeur de l'écran */
+        min-height: 60%; /* Réduire la hauteur */
+    }
+
+    .card {
+        min-width: 100%; /* Les cartes prennent toute la largeur */
+    }
+
+    .carrousel {
+        width: 100%; /* Le carrousel prend toute la largeur */
+    }
+}
+
+/* Media Queries pour les écrans moyens (tablettes) */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .content_box {
+        padding: 4em; /* Ajuster le padding */
+    }
+
+    #modal {
+        width: 70%; /* La modale est un peu plus large */
+    }
+
+    .card {
+        min-width: 45%; /* Deux cartes par ligne */
+    }
+}
+
+/* Media Queries pour les grands écrans (desktop) */
+@media (min-width: 1025px) {
+    .content_box {
+        padding: 8em; /* Retour au padding original */
+    }
+
+    #modal {
+        width: 40%; /* La modale reste à 40% de la largeur */
+    }
+
+    .card {
+        min-width: 500px; /* Retour à la largeur originale */
     }
 }

@@ -1,7 +1,7 @@
         <?= \Config\Services::validation()->listErrors() ?>
         
         <div id="modal">
-                <form action="<?php echo base_url() . 'createKeyPoint'; ?>" method="POST" name="keyPointForm">
+                <form action="<?php echo base_url() . 'createKeyPoint'; ?>" method="POST" name="keyPointForm" enctype="multipart/form-data">
                     <h4 class="title_form"> Ajoutez un nouveau lieu </h4>
 
                     <?= csrf_field() ?>
