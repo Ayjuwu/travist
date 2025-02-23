@@ -15,25 +15,43 @@
                 <input type="hidden" name="userID" id="userID" value="<?= set_value('userID', $userID) ?>">
             </span>
 
-            <span class="carrousel-span">
-                <div class="carrousel">
-                    <?php foreach ($keypoints as $keypoint) {
-                        echo "<a href='" . base_url() . 'voir_plus/' . $keypoint->key_point_name . "'>
-                                <img src='data:image/jpeg;base64, $keypoint->key_point_cover' alt='$keypoint->key_point_name' class='carrousel-image'>
-                            </a>";
-                    } ?>
+            <span>
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Rechercher un lieu..." class="search-input">
                 </div>
             </span>
 
-            <span class="select_box" id="selectBox">
-                <label> Choisir un lieux : </label>
-                <select name='keypoints[]'> 
-                    <option selected disabled hidden> Choisissez un lieux : </option>
-                    <?php foreach ($keypoints as $keypoint) :
-                        echo "<option value='$keypoint->id'>$keypoint->key_point_name </option>";
-                    endforeach; ?>
-                </select>
-                <button type="button" id="addKpBtn"> + </button>
+            <!-- Ajoutez cette modale pour la sélection -->
+            <div id="imageModal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <span class="close-modal">&times;</span>
+                    <img id="modalImage" class="modal-image">
+                    <div class="modal-buttons">
+                        <button type="button" id="addToList" class="modal-btn add-btn">Ajouter à la liste</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Liste des destinations sélectionnées -->
+            <div id="selectedList" class="selected-list"></div>
+
+            <!-- Input caché pour stocker les IDs -->
+            <input type="hidden" name="keypoints[]" id="selectedKeypoints" value="<?= set_value('people_number') ?>">
+
+            <!-- Votre carrousel existant -->
+            <span class="carrousel-span">
+                <div class="carrousel">
+                    <?php foreach ($keypoints as $keypoint) {
+                        echo "<a href='' 
+                                data-id='$keypoint->id' 
+                                data-name='$keypoint->key_point_name' 
+                                class='carrousel-item'>
+                                <img src='data:image/jpeg;base64,$keypoint->key_point_cover' 
+                                    alt='$keypoint->key_point_name' 
+                                    class='carrousel-image'>
+                            </a>";
+                    } ?>
+                </div>
             </span>
           
             <button type="submit" class="submitBtn" name="submit_travel"> Valider </button>
@@ -55,27 +73,137 @@
     const select = document.createElement('select');
 
     document.addEventListener('DOMContentLoaded', () => {
-        addKpBtn.addEventListener('click', () => {
-            selectBox.appendChild(select);
-            selectBox.insertAdjacentElement('beforeEnd', addKpBtn);
-            select.outerHTML = `
-                <select name='keypoints[]'>
-                    <option selected disabled hidden> Choisissez un lieux : </option>
-                    <?php foreach ($keypoints as $keypoint) { 
-                        echo "<option value='$keypoint->id'>$keypoint->key_point_name</option>";
-                    } ?>
-                </select>
-            `;
-        })
+        const searchInput = document.getElementById('searchInput');
+        const carrousel = document.querySelector('.carrousel');
+        const carrouselItems = document.querySelectorAll('.carrousel-item');
 
-        const links = document.querySelectorAll('.carrousel a');
+        // Variable pour stocker l'état de l'animation
+        let isCarrouselRunning = true;
 
-        links.forEach(link => {
-            link.addEventListener('click', function(event) {
-                event.preventDefault(); // Empêche le comportement par défaut du lien
-                const imageSrc = link.querySelector('img').src;
-                alert(`Vous avez cliqué sur l'image : ${imageSrc}`); // Exemple d'action
+        // Fonction pour filtrer en temps réel
+        function filterCarrousel() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            let hasVisibleItems = false;
+
+            carrouselItems.forEach(item => {
+                const itemName = item.getAttribute('data-name').toLowerCase();
+                const isVisible = itemName.includes(searchTerm);
+
+                item.style.display = isVisible ? 'block' : 'none';
+
+                if (isVisible) {
+                    hasVisibleItems = true; // Au moins un élément est visible
+                }
+            });
+
+            // Arrêter ou redémarrer le carrousel en fonction des résultats
+            if (hasVisibleItems && isCarrouselRunning) {
+                carrousel.style.animationPlayState = 'paused'; // Arrêter le carrousel
+                isCarrouselRunning = false;
+            } else if (!searchTerm && !isCarrouselRunning) {
+                carrousel.style.animationPlayState = 'running'; // Redémarrer le carrousel
+                isCarrouselRunning = true;
+            }
+        }
+
+        // Écouteur d'événement pour la barre de recherche (en temps réel)
+        searchInput.addEventListener('input', filterCarrousel);
+
+
+        let selectedKeypoints = []; // Tableau pour stocker les noms des lieux
+        let currentKeypoint = null;
+
+        // Gestion de l'ouverture de la modale
+        document.querySelectorAll('.carrousel-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                currentKeypoint = {
+                    id: this.dataset.id,
+                    name: this.dataset.name
+                };
+                document.getElementById('modalImage').src = this.querySelector('img').src;
+                document.getElementById('imageModal').style.display = 'block';
             });
         });
+
+        // Gestion du bouton "Ajouter à la liste"
+        document.getElementById('addToList').addEventListener('click', function(e) {
+            e.preventDefault();
+            if (currentKeypoint && !selectedKeypoints.includes(currentKeypoint.name)) {
+                selectedKeypoints.push(currentKeypoint.name); // Ajouter le nom du lieu au tableau
+                updateSelectedList();
+            }
+            closeModal();
+        });
+
+        const modal = document.getElementById('imageModal');
+        const closeModalBtn = document.querySelector('.close-modal');
+
+        // Gestion de l'ouverture de la modale
+        document.querySelectorAll('.carrousel-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('modalImage').src = this.querySelector('img').src;
+                modal.style.display = 'block';
+            });
+        });
+
+        // Gestion de la fermeture de la modale
+        closeModalBtn.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+
+        // Fermeture de la modale en cliquant à l'extérieur
+        window.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        // Mettre à jour la liste des lieux choisis
+        function updateSelectedList() {
+            const list = document.getElementById('selectedList');
+            list.innerHTML = ''; // Vider la liste
+
+            // Afficher chaque lieu dans la liste
+            selectedKeypoints.forEach(name => {
+                const item = document.createElement('div');
+                item.className = 'selected-item';
+                item.innerHTML = `
+                    <span>${name}</span>
+                    <button onclick="removeItem('${name}')" class="remove-btn">×</button>
+                `;
+                list.appendChild(item);
+            });
+
+            // Afficher ou masquer la div en fonction du nombre de lieux sélectionnés
+            if (selectedKeypoints.length > 0) {
+                list.style.display = 'block'; // Afficher la div
+            } else {
+                list.style.display = 'none'; // Masquer la div
+            }
+
+            // Mettre à jour le champ caché avec les noms des lieux
+            document.getElementById('selectedKeypointsNames').value = selectedKeypoints.join(',');
+        }
+
+        // Fonction pour retirer un lieu de la liste
+        window.removeItem = function(name) {
+            selectedKeypoints = selectedKeypoints.filter(item => item !== name);
+            updateSelectedList();
+        };
+
+        // Fermeture de la modale
+        function closeModal() {
+            document.getElementById('imageModal').style.display = 'none';
+            currentKeypoint = null;
+        }
+
+        // Fermeture de la modale en cliquant à l'extérieur
+        window.addEventListener('click', function(e) {
+            if (e.target === document.getElementById('imageModal')) {
+                closeModal();
+            }
+        });
     });
-    </script>
+</script>
