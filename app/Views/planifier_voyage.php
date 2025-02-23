@@ -36,7 +36,7 @@
             <div id="selectedList" class="selected-list"></div>
 
             <!-- Input caché pour stocker les IDs -->
-            <input type="hidden" name="keypoints[]" id="selectedKeypoints" value="<?= set_value('people_number') ?>">
+            <input type="hidden" name="keypoints" id="selectedKeypoints">
 
             <!-- Votre carrousel existant -->
             <span class="carrousel-span">
@@ -67,50 +67,8 @@
 </html>
 
 <script>
-    const addKpBtn = document.getElementById('addKpBtn');
-    const selectBox = document.getElementById('selectBox');
-    
-    const select = document.createElement('select');
-
-    document.addEventListener('DOMContentLoaded', () => {
-        const searchInput = document.getElementById('searchInput');
-        const carrousel = document.querySelector('.carrousel');
-        const carrouselItems = document.querySelectorAll('.carrousel-item');
-
-        // Variable pour stocker l'état de l'animation
-        let isCarrouselRunning = true;
-
-        // Fonction pour filtrer en temps réel
-        function filterCarrousel() {
-            const searchTerm = searchInput.value.toLowerCase().trim();
-            let hasVisibleItems = false;
-
-            carrouselItems.forEach(item => {
-                const itemName = item.getAttribute('data-name').toLowerCase();
-                const isVisible = itemName.includes(searchTerm);
-
-                item.style.display = isVisible ? 'block' : 'none';
-
-                if (isVisible) {
-                    hasVisibleItems = true; // Au moins un élément est visible
-                }
-            });
-
-            // Arrêter ou redémarrer le carrousel en fonction des résultats
-            if (hasVisibleItems && isCarrouselRunning) {
-                carrousel.style.animationPlayState = 'paused'; // Arrêter le carrousel
-                isCarrouselRunning = false;
-            } else if (!searchTerm && !isCarrouselRunning) {
-                carrousel.style.animationPlayState = 'running'; // Redémarrer le carrousel
-                isCarrouselRunning = true;
-            }
-        }
-
-        // Écouteur d'événement pour la barre de recherche (en temps réel)
-        searchInput.addEventListener('input', filterCarrousel);
-
-
-        let selectedKeypoints = []; // Tableau pour stocker les noms des lieux
+     document.addEventListener('DOMContentLoaded', () => {
+        let selectedKeypoints = []; // Stocke les IDs des lieux
         let currentKeypoint = null;
 
         // Gestion de l'ouverture de la modale
@@ -129,67 +87,44 @@
         // Gestion du bouton "Ajouter à la liste"
         document.getElementById('addToList').addEventListener('click', function(e) {
             e.preventDefault();
-            if (currentKeypoint && !selectedKeypoints.includes(currentKeypoint.name)) {
-                selectedKeypoints.push(currentKeypoint.name); // Ajouter le nom du lieu au tableau
+            if (currentKeypoint && !selectedKeypoints.includes(currentKeypoint.id)) {
+                selectedKeypoints.push(currentKeypoint.id); // Stocke l'ID
                 updateSelectedList();
             }
             closeModal();
         });
 
-        const modal = document.getElementById('imageModal');
-        const closeModalBtn = document.querySelector('.close-modal');
-
-        // Gestion de l'ouverture de la modale
-        document.querySelectorAll('.carrousel-item').forEach(item => {
-            item.addEventListener('click', function(e) {
-                e.preventDefault();
-                document.getElementById('modalImage').src = this.querySelector('img').src;
-                modal.style.display = 'block';
-            });
-        });
-
-        // Gestion de la fermeture de la modale
-        closeModalBtn.addEventListener('click', function() {
-            modal.style.display = 'none';
-        });
-
-        // Fermeture de la modale en cliquant à l'extérieur
-        window.addEventListener('click', function(e) {
-            if (e.target === modal) {
-                modal.style.display = 'none';
-            }
-        });
-
-        // Mettre à jour la liste des lieux choisis
+        // Mettre à jour la liste et l'input caché
         function updateSelectedList() {
             const list = document.getElementById('selectedList');
-            list.innerHTML = ''; // Vider la liste
+            const selectedKeypointsInput = document.getElementById('selectedKeypoints');
+            list.innerHTML = '';
 
-            // Afficher chaque lieu dans la liste
-            selectedKeypoints.forEach(name => {
+            // Met à jour l'input caché avec les IDs séparés par des virgules
+            selectedKeypointsInput.value = selectedKeypoints.join(',');
+
+            // Affiche les éléments sélectionnés
+            selectedKeypoints.forEach(id => {
+                const itemName = document.querySelector(`[data-id="${id}"]`).dataset.name;
                 const item = document.createElement('div');
                 item.className = 'selected-item';
                 item.innerHTML = `
-                    <span>${name}</span>
-                    <button onclick="removeItem('${name}')" class="remove-btn">×</button>
+                    <span>${itemName}</span>
+                    <button onclick="removeItem('${id}')" class="remove-btn">×</button>
                 `;
                 list.appendChild(item);
             });
 
-            // Afficher ou masquer la div en fonction du nombre de lieux sélectionnés
             if (selectedKeypoints.length > 0) {
-                list.style.display = 'block'; // Afficher la div
+                list.style.display = 'block';
             } else {
-                list.style.display = 'none'; // Masquer la div
+                list.style.display = 'none';
             }
-
-            // Mettre à jour le champ caché avec les noms des lieux
-            document.getElementById('selectedKeypointsNames').value = selectedKeypoints.join(',');
         }
 
         // Fonction pour retirer un lieu de la liste
-        window.removeItem = function(name) {
-            selectedKeypoints = selectedKeypoints.filter(item => item !== name);
+        window.removeItem = function(id) {
+            selectedKeypoints = selectedKeypoints.filter(itemId => itemId !== id);
             updateSelectedList();
         };
 
@@ -199,11 +134,36 @@
             currentKeypoint = null;
         }
 
-        // Fermeture de la modale en cliquant à l'extérieur
-        window.addEventListener('click', function(e) {
-            if (e.target === document.getElementById('imageModal')) {
-                closeModal();
-            }
+        // Variables pour la recherche
+        const searchInput = document.getElementById('searchInput');
+        let allCarrouselItems = document.querySelectorAll('.carrousel-item');
+
+        // Fonction de filtrage
+        function filterCarrousel(searchTerm) {
+            searchTerm = searchTerm.toLowerCase().trim();
+            
+            allCarrouselItems.forEach(item => {
+                const itemName = item.dataset.name.toLowerCase();
+                const isVisible = itemName.includes(searchTerm);
+                
+                item.style.display = isVisible ? 'block' : 'none';
+            });
+
+            // Gestion de l'animation
+            const hasResults = Array.from(allCarrouselItems).some(item => item.style.display !== 'none');
+            carrousel.style.animationPlayState = hasResults ? 'paused' : 'running';
+        }
+
+        // Écouteur d'événement pour la recherche
+        searchInput.addEventListener('input', (e) => {
+            filterCarrousel(e.target.value);
         });
+
+        // Réinitialiser après suppression
+        window.removeItem = function(id) {
+            selectedKeypoints = selectedKeypoints.filter(itemId => itemId !== id);
+            updateSelectedList();
+            filterCarrousel(searchInput.value); // Rafraîchir le filtre après suppression
+        };
     });
 </script>

@@ -26,21 +26,27 @@
         
             if ($this->validate($rules)) {
                 $userID = $this->request->getVar('userID');
-                $selectedKeypoints = $this->request->getVar('keypoints');
+        
+                // Récupérer la chaîne d'IDs séparés par des virgules
+                $keypointsString = $this->request->getVar('keypoints');
+        
+                // Convertir en tableau et filtrer les valeurs vides
+                $keypoints = array_filter(explode(',', $keypointsString));
         
                 $travel = new Travel();
         
                 $travel->travel_name = $this->request->getVar('travel_name');
                 $travel->people_number = $this->request->getVar('people_number');
                 $travel->total_price = 0;
-                $travel->user_id = $userID; // Associer l'utilisateur au voyage
+                $travel->user_id = $userID;
         
                 $travel->save();
         
-                foreach ($selectedKeypoints as $keypointId) {
-                    $keypoint = Keypoint::find($keypointId);
+                // Associer les keypoints au voyage
+                foreach ($keypoints as $keypointId) {
+                    $keypoint = Keypoint::find((int)$keypointId); // Conversion en integer
                     if ($keypoint) {
-                        $travel->keypoints()->attach($keypointId);
+                        $travel->keypoints()->attach($keypoint->id);
                         $travel->total_price += $keypoint->key_point_price * $travel->people_number;
                     }
                 }
