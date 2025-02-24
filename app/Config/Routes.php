@@ -58,3 +58,8 @@ $routes->get('/planifier_un_voyage', 'VoyageController::index', ['filter' => 'Fi
 $routes->post('/createTravel', 'VoyageController::createTravel', ['filter' => 'FiltreUser']);
 
 $routes->get('profil/delete/(:num)', 'VoyageController::delete/$1', ['filter' => 'FiltreUser']);
+
+/* VoyageDetailsController */
+
+$routes->get('details_voyage/(:num)', 'VoyageDetailsController::index/$1', ['filter' => 'FiltreUser']);
+$routes->post('/modifyTravel/(:num)', 'VoyageDetailsController::modifyTravel/$1', ['filter' => 'FiltreUser']);
