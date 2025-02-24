@@ -582,6 +582,12 @@ select {
     transform: scale(0.9);
 }
 
+.leaflet-interactive {
+    stroke: #FF6B6B; /* Couleur de la ligne */
+    stroke-width: 3; /* Épaisseur */
+    fill-opacity: 0; 
+}
+
 @keyframes slide {
     0% {
         transform: translateX(0);
