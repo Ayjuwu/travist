@@ -16,7 +16,7 @@ class App extends BaseConfig
      *
      * E.g., http://example.com/
      */
-    public string $baseURL = 'http://localhost/www/PPE_Travist/travist/public/';
+    public string $baseURL = 'http://localhost/~mathys.raspolini/travist/public/';
 
     /**
      * Allowed Hostnames in the Site URL other than the hostname in the baseURL.

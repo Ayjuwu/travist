@@ -13,7 +13,7 @@
         <span>
             <label for="people_number">Nombre de voyageurs :</label>
             <input type="text" name="people_number" id="people_number" value="<?= $current_travel->people_number ?>">
-            <input type="hidden" name="userID" id="userID" value="<?= $current_travel->id ?>">
+            <input type="hidden" name="userID" value="<?= $current_travel->user_id ?>">
         </span>
 
         <span>
@@ -28,7 +28,7 @@
                 <span class="close-modal">&times;</span>
                 <img id="modalImage" class="modal-image">
                 <div class="modal-buttons">
-                    <button type="button" id="addToList" class="modal-btn add-btn">Modifier</button>
+                    <button type="button" id="addToList" class="modal-btn add-btn">Ajouter à la liste</button>
                 </div>
             </div>
         </div>

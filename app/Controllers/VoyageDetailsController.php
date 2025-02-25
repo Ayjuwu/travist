@@ -36,13 +36,14 @@
                 // Convertir en tableau et filtrer les valeurs vides
                 $keypoints = array_filter(explode(',', $keypointsString));
         
-                $travel = new Travel();
+                $travel = Travel::find($id);
         
                 $travel->travel_name = $this->request->getVar('travel_name');
                 $travel->people_number = $this->request->getVar('people_number');
                 $travel->total_price = 0;
                 $travel->user_id = $userID;
         
+                $travel->keypoints()->detach();
                 $travel->save();
         
                 // Associer les keypoints au voyage
