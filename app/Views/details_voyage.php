@@ -39,13 +39,15 @@
         <!-- Stockage des IDs -->
         <input type="hidden" name="keypoints" id="selectedKeypoints" value="<?= implode(',', $current_keypoints) ?>">
 
-        <!-- Carrousel -->
+        <!-- Carrousel avec data-attributes -->
         <span class="carrousel-span">
             <div class="carrousel">
                 <?php foreach ($keypoints as $keypoint): ?>
                     <a href="#" 
                        data-id="<?= $keypoint->id ?>" 
                        data-name="<?= $keypoint->key_point_name ?>" 
+                       data-x="<?= $keypoint->key_point_gps_x ?>" 
+                       data-y="<?= $keypoint->key_point_gps_y ?>"
                        class="carrousel-item">
                         <img src="data:image/jpeg;base64,<?= $keypoint->key_point_cover ?>" 
                              alt="<?= $keypoint->key_point_name ?>" 
@@ -68,43 +70,55 @@
     </div>
 <?php endif; ?>
 
-
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    let selectedKeypoints = <?= json_encode($current_keypoints ?? []) ?>;
-    const keypoints = <?= json_encode($keypoints) ?>;
+    // Initialisation des données avec conversion numérique stricte
+    let selectedKeypoints = <?= json_encode($current_keypoints) ?>.map(id => parseInt(id));
     let map, markers = [], route = null;
+    let currentKeypoint = null;
+
+    // Fonction de récupération des keypoints depuis le DOM
+    const getKeypoints = () => {
+        return Array.from(document.querySelectorAll('.carrousel-item')).map(node => ({
+            id: parseInt(node.dataset.id),
+            name: node.dataset.name,
+            x: parseFloat(node.dataset.x),
+            y: parseFloat(node.dataset.y)
+        }));
+    };
 
     // Initialisation
     initMap();
     updateSelectedList();
     updateMap();
 
-    // Gestion de la modale
+    // Gestion des clics sur le carrousel
     document.querySelectorAll('.carrousel-item').forEach(item => {
         item.addEventListener('click', function(e) {
             e.preventDefault();
-            const img = this.querySelector('img');
-            document.getElementById('modalImage').src = img.src;
-            document.getElementById('imageModal').style.display = 'block';
             currentKeypoint = {
-                id: this.dataset.id,
-                name: this.dataset.name
+                id: parseInt(this.dataset.id),
+                name: this.dataset.name,
+                x: parseFloat(this.dataset.x),
+                y: parseFloat(this.dataset.y)
             };
+            document.getElementById('modalImage').src = this.querySelector('img').src;
+            document.getElementById('imageModal').style.display = 'block';
         });
     });
 
+    // Gestion de l'ajout à la liste
     document.getElementById('addToList').addEventListener('click', (e) => {
         e.preventDefault();
         if (currentKeypoint && !selectedKeypoints.includes(currentKeypoint.id)) {
-            selectedKeypoints.push(currentKeypoint.id);
+            selectedKeypoints = [...selectedKeypoints, currentKeypoint.id]; // Nouveau tableau
             updateSelectedList();
             updateMap();
         }
         closeModal();
     });
 
-    // Fonctions
+    // Fonction de mise à jour de la liste
     function updateSelectedList() {
         const list = document.getElementById('selectedList');
         const input = document.getElementById('selectedKeypoints');
@@ -112,11 +126,12 @@ document.addEventListener('DOMContentLoaded', () => {
         input.value = selectedKeypoints.join(',');
 
         selectedKeypoints.forEach(id => {
+            const kpElement = document.querySelector(`[data-id="${id}"]`);
             const item = document.createElement('div');
             item.className = 'selected-item';
             item.innerHTML = `
-                <span>${document.querySelector(`[data-id="${id}"]`).dataset.name}</span>
-                <button onclick="removeItem('${id}', event)" class="remove-btn">×</button>
+                <span>${kpElement?.dataset.name || 'Inconnu'}</span>
+                <button onclick="removeItem(${id}, event)" class="remove-btn">×</button>
             `;
             list.appendChild(item);
         });
@@ -124,13 +139,15 @@ document.addEventListener('DOMContentLoaded', () => {
         list.style.display = selectedKeypoints.length ? 'block' : 'none';
     }
 
+    // Fonction de suppression
     window.removeItem = (id, event) => {
         event.preventDefault();
-        selectedKeypoints = selectedKeypoints.filter(itemId => itemId != id);
+        selectedKeypoints = selectedKeypoints.filter(itemId => itemId !== id);
         updateSelectedList();
         updateMap();
     };
 
+    // Initialisation de la carte
     function initMap() {
         map = L.map('map').setView([48.8566, 2.3522], 4);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -138,64 +155,51 @@ document.addEventListener('DOMContentLoaded', () => {
         }).addTo(map);
     }
 
+    // Mise à jour de la carte
     function updateMap() {
-        console.log('Mise à jour de la carte');
-        markers.forEach(m => map.removeLayer(m));
+        // Nettoyage des éléments existants
+        markers.forEach(marker => map.removeLayer(marker));
         markers = [];
         if (route) map.removeLayer(route);
 
+        // Récupération des données fraîches
+        const keypoints = getKeypoints();
         const coordinates = [];
+
+        // Création des marqueurs
         selectedKeypoints.forEach(id => {
-            const kp = keypoints.find(k => k.id == id);
-            if (kp && kp.key_point_gps_location) {
-                const loc = convertToLatLng(kp.key_point_gps_location);
-                if (loc) {
-                    coordinates.push(loc);
-                    markers.push(L.marker(loc).addTo(map));
-                } else {
-                    console.error('Coordonnées GPS invalides pour le point:', kp);
-                }
-            } else {
-                console.error('Point clé non trouvé ou données GPS manquantes:', id);
+            const kp = keypoints.find(k => k.id === id);
+            if (kp) {
+                const location = [kp.y, kp.x]; // [latitude, longitude]
+                coordinates.push(location);
+                markers.push(
+                    L.marker(location)
+                        .addTo(map)
+                        .bindPopup(`<b>${kp.name}</b>`)
+                );
             }
         });
 
+        // Dessin de l'itinéraire
         if (coordinates.length >= 2) {
-            route = L.polyline(coordinates, { color: '#FF6B6B', weight: 3 }).addTo(map);
+            route = L.polyline(coordinates, {
+                color: '#FF6B6B',
+                weight: 3,
+                smoothFactor: 1
+            }).addTo(map);
         }
 
-        if (coordinates.length) {
-            map.fitBounds(L.latLngBounds(coordinates));
-        }
-    }
-    
-    function convertToLatLng(gps) {
-        if (!gps || typeof gps !== 'string') {
-            console.error('Données GPS invalides:', gps);
-            return null;
-        }
-        const [latDMS, lngDMS] = gps.split(/\s*,\s*/);
-        return [parseDMS(latDMS), parseDMS(lngDMS)];
+        // Ajustement de la vue
+        coordinates.length > 0 ?
+            map.fitBounds(L.latLngBounds(coordinates)) :
+            map.setView([48.8566, 2.3522], 4);
     }
 
-    function parseDMS(dms) {
-        if (!dms || typeof dms !== 'string') {
-            console.error('Données DMS invalides:', dms);
-            return null;
-        }
-        const parts = dms.match(/(\d+)°\s*(\d+)?'?\s*([\d.]+)?/);
-        if (!parts) {
-            console.error('Format DMS invalide:', dms);
-            return null;
-        }
-        return parseFloat(parts[1]) + 
-            (parseFloat(parts[2] || 0) / 60) + 
-            (parseFloat(parts[3] || 0) / 3600);
-    }
-
-    // Fermeture modale
+    // Fermeture de la modale
     const closeModal = () => document.getElementById('imageModal').style.display = 'none';
     document.querySelector('.close-modal').addEventListener('click', closeModal);
-    document.addEventListener('click', e => e.target === document.getElementById('imageModal') && closeModal());
+    document.addEventListener('click', e => {
+        if (e.target === document.getElementById('imageModal')) closeModal();
+    });
 });
 </script>
