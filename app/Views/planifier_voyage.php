@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
         item.addEventListener('click', function(e) {
             e.preventDefault();
             currentKeypoint = {
-                id: this.dataset.id,
+                id: parseInt(this.dataset.id),
                 name: this.dataset.name,
                 x: parseFloat(this.dataset.x),
                 y: parseFloat(this.dataset.y)
@@ -119,11 +119,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // Ajout des nouveaux marqueurs
         const coordinates = [];
         selectedKeypoints.forEach(id => {
-            const kp = keypoints.find(k => k.id == id);
+            const kp = keypoints.find(k => k.id === id);
             if (kp) {
-                const coord = [kp.x, kp.y];
+                const coord = [kp.x, kp.y]; // Conservez cet ordre si x=latitude et y=longitude
                 coordinates.push(coord);
-                markers.push(L.marker(coord).addTo(map));
+                markers.push(L.marker(coord)
+                    .addTo(map)
+                    .bindPopup(`<b>${kp.name}</b>`));
             }
         });
 
@@ -133,9 +135,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Ajustement de la vue
-        if (coordinates.length > 0) {
-            map.fitBounds(L.latLngBounds(coordinates));
-        }
+        coordinates.length > 0 ? 
+            map.fitBounds(L.latLngBounds(coordinates)) : 
+            map.setView([48.8566, 2.3522], 4);
     }
 
     // Gestion de l'ajout à la liste
@@ -149,19 +151,28 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('imageModal').style.display = 'none';
     });
 
-    // Mise à jour de l'affichage de la liste
+    // Mise à jour de l'affichage de la liste (CORRIGÉ)
     function updateSelectedList() {
         const list = document.getElementById('selectedList');
-        list.innerHTML = selectedKeypoints.map(id => {
-            const kp = keypoints.find(k => k.id == id);
-            return `<div class="selected-item">
-                <span>${kp.name}</span>
-                <button onclick="removeItem('${id}')">×</button>
-            </div>`;
-        }).join('');
+        const input = document.getElementById('selectedKeypoints');
+        list.innerHTML = '';
+        input.value = selectedKeypoints.join(',');
+
+        selectedKeypoints.forEach(id => {
+            const kp = keypoints.find(k => k.id === id);
+            const item = document.createElement('div');
+            item.className = 'selected-item';
+            item.innerHTML = `
+                <span>${kp?.name || 'Lieu inconnu'}</span>
+                <button onclick="removeItem(${id})" class="remove-btn">×</button>
+            `;
+            list.appendChild(item);
+        });
+
+        list.style.display = selectedKeypoints.length ? 'block' : 'none';
     }
 
-    // Suppression d'un élément
+    // Suppression d'un élément (CORRIGÉ)
     window.removeItem = id => {
         selectedKeypoints = selectedKeypoints.filter(k => k !== id);
         document.getElementById('selectedKeypoints').value = selectedKeypoints.join(',');

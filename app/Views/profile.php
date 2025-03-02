@@ -14,7 +14,7 @@
                         </a>";
                 }
             } else {
-                echo "<img src='" . base_url() . "pictures/no_travel_icon.png' alt='no travel found'>
+                echo "<img src='" . base_url() . "/pictures/no_travel_icon.png' alt='no travel found'>
                 <p class='no_travel_text'> Vous n'avez aucun voyage programmé. </p>";
             } ?>
             
