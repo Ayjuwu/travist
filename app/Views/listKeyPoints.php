@@ -10,11 +10,11 @@
                             echo "<span class='card' id='card'> 
                                     <span class='kp_btns_box'> 
                                         <a href='" . base_url() . "modifier_un_lieu/$keypoint->id' class='modify'> 
-                                            <img src='" . base_url() . "/pictures/edit-pen.svg'> 
+                                            <img src='" . base_url() . "pictures/edit-pen.svg'> 
                                         </a>
     
                                         <a href='" . base_url() . "liste_des_lieux/delete/$keypoint->id' class='delete'> 
-                                            <img src='" . base_url() . "/pictures/trash-bin-delete.svg'> 
+                                            <img src='" . base_url() . "pictures/trash-bin-delete.svg'> 
                                         </a>
                                     </span>
     

@@ -2,7 +2,7 @@
 
 <div id="modal">
     <form action="<?= base_url('modifyTravel/' . $current_travel->id) ?>" method="POST" name="travelForm" id="travelForm">
-        <h4 class="title_form">Voir / modifier le voyage</h4>
+        <h4 class="title_form"> <?= $current_travel->travel_name ?> </h4>
         <?= csrf_field() ?>
         
         <span>
@@ -60,7 +60,10 @@
         <!-- Carte -->
         <div id="map" style="height: 400px; width: 100%;"></div>
       
-        <button type="submit" class="submitBtn" name="submit_travel">Enregistrer</button>
+        <div class='horizontal-box'>
+            <button type="submit" class="submitBtn" name="submit_travel">Enregistrer</button>
+            <a href='<?= base_url() ."profil/delete/$current_travel->id" ?>' class='delete'><img src='<?= base_url() ?>pictures/trash-bin-delete.svg'></a>
+        </div>
     </form>
 </div>
 

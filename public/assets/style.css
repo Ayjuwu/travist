@@ -75,6 +75,7 @@ a {
     text-decoration: none;
     transform: perspective(0px) translateZ(0);
     backface-visibility: hidden;
+    cursor: pointer;
 }
 
 .no_travel_text {
@@ -331,36 +332,40 @@ select {
 .kp_btns_box > a {
     display: grid;
     place-items: center;
+}
+
+.modify, .delete {
+    display: grid;
+    place-items: center;
     width: 2.5em;
     height: 2.5em;
     border: none;
     outline: none;
     border-radius: .25em;
-    cursor: pointer;
     transition: scale .5s cubic-bezier(0.075, 0.82, 0.165, 1);
     transform: perspective(0px) translateZ(0);
     backface-visibility: hidden;
 }
 
-.kp_btns_box > a:hover {
-    scale: 1.2;
-}
-
-.kp_btns_box > a:active {
-    scale: 1;
-}
-
-.kp_btns_box > .modify {
+.modify {
     background-color: var(--modify-color);
 }
 
-.kp_btns_box > .delete {
+.delete {
     background-color: var(--delete-color);
 }
 
-.kp_btns_box > a > img {
+.modify, .delete > img {
     width: 80%;
     height: 80%;
+}
+
+.modify:hover, .delete:hover {
+    scale: 1.2;
+}
+
+.modify:active, .delete:active {
+    scale: 1;
 }
 
 .item {
@@ -586,6 +591,12 @@ select {
     stroke: #FF6B6B; /* Couleur de la ligne */
     stroke-width: 3; /* Épaisseur */
     fill-opacity: 0; 
+}
+
+.horizontal-box {
+    display: flex;
+    flex-direction: row;
+    gap: 1em;
 }
 
 @keyframes slide {
