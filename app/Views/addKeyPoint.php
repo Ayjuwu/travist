@@ -37,12 +37,12 @@
 
                     <span>
                         <label for="key_point_gps_x"> Coordonnées X : </label>
-                        <input type="text" name="key_point_gps_x" id="key_point_gps_x" value="<?= $current_keypoint->key_point_gps_x ?>">
+                        <input type="text" name="key_point_gps_x" id="key_point_gps_x" value="<?= set_value('key_point_gps_x') ?>">
                     </span>
 
                     <span>
                         <label for="key_point_gps_y"> Coordonnées Y : </label>
-                        <input type="text" name="key_point_gps_y" id="key_point_gps_y" value="<?= $current_keypoint->key_point_gps_y ?>">
+                        <input type="text" name="key_point_gps_y" id="key_point_gps_y" value="<?= set_value('key_point_gps_y') ?>">
                     </span>
 
                     <span class="select_box" id="selectBox">

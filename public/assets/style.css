@@ -355,7 +355,7 @@ select {
     background-color: var(--delete-color);
 }
 
-.modify, .delete > img {
+.modify > img, .delete > img {
     width: 80%;
     height: 80%;
 }

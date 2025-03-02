@@ -2,7 +2,7 @@
     namespace App\Controllers;
     use App\Models\Tag;
 
-    class TagsModifyController extends BaseController {
+    class TagsModifierController extends BaseController {
         public function index(int $id) {
             helper(['form']);
 

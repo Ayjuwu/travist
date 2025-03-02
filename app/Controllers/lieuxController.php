@@ -18,6 +18,7 @@
         public function delete(int $id) {
             $keypoint = Keypoint::find($id);
 
+            $keypoint->travels()->detach();
             $keypoint->tags()->detach();
             $keypoint->delete();
 

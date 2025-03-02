@@ -4,4 +4,8 @@
     
     class Tag extends Model {
         public $timestamps = false;
+
+        public function keypoints() {
+            return $this->belongsToMany('App\Models\Keypoint', 'tagged');
+        }
     }

@@ -14,6 +14,8 @@
 
         function delete(int $id) {
             $tag = Tag::find($id);
+
+            $tag->keypoints()->detach();
             $tag->delete();
 
             return redirect()->to(base_url() . 'liste_des_tags');
