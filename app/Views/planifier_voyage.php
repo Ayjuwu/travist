@@ -151,6 +151,10 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('imageModal').style.display = 'none';
     });
 
+    document.querySelector('.close-modal').addEventListener('click', () => {
+        document.getElementById('imageModal').style.display = 'none';
+    });
+
     // Mise à jour de l'affichage de la liste (CORRIGÉ)
     function updateSelectedList() {
         const list = document.getElementById('selectedList');
