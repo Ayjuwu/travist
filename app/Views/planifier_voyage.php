@@ -26,6 +26,13 @@
         <div id="imageModal" class="modal" style="display: none;">
             <div class="modal-content">
                 <span class="close-modal">&times;</span>
+
+                <p id="kpName" class=""></p>
+                <p id="kpCity" class=""></p>
+                <p id="kpStartDate" class=""></p>
+                <p id="kpEndDate" class=""></p>
+                <p id="kpPrice" class=""></p>
+
                 <img id="modalImage" class="modal-image">
                 <div class="modal-buttons">
                     <button type="button" id="addToList" class="modal-btn add-btn">Ajouter à la liste</button>
@@ -44,6 +51,10 @@
                     echo "<a href='' 
                             data-id='$keypoint->id' 
                             data-name='$keypoint->key_point_name' 
+                            data-price='$keypoint->key_point_price' 
+                            data-startDate='$keypoint->key_point_start_date' 
+                            data-endDate='$keypoint->key_point_end_date' 
+                            data-city='$keypoint->key_point_nearest_city' 
                             data-x='$keypoint->key_point_gps_x' 
                             data-y='$keypoint->key_point_gps_y'
                             class='carrousel-item'>
@@ -82,7 +93,11 @@ document.addEventListener('DOMContentLoaded', () => {
             'id' => $kp['id'],
             'x' => (float)$kp['key_point_gps_x'],
             'y' => (float)$kp['key_point_gps_y'],
-            'name' => $kp['key_point_name']
+            'name' => $kp['key_point_name'],
+            'price' => $kp['key_point_price'],
+            'startDate' => $kp['key_point_start_date'],
+            'endDate' => $kp['key_point_end_date'],
+            'city' => $kp['key_point_nearest_city']
         ];
     }, $keypoints->toArray())); ?>;
 
@@ -93,9 +108,20 @@ document.addEventListener('DOMContentLoaded', () => {
             currentKeypoint = {
                 id: parseInt(this.dataset.id),
                 name: this.dataset.name,
+                price: this.dataset.price,
+                startDate: this.dataset.startDate,
+                endDate: this.dataset.endDate,
+                city: this.dataset.city,
                 x: parseFloat(this.dataset.x),
                 y: parseFloat(this.dataset.y)
             };
+
+            document.getElementById('kpName').innerText = currentKeypoint.name;
+            document.getElementById('kpCity').innerText = currentKeypoint.city;
+            document.getElementById('kpStartDate').innerText = currentKeypoint.startDate;
+            document.getElementById('kpEndDate').innerText = currentKeypoint.endDate;
+            document.getElementById('kpPrice').innerText = currentKeypoint.price;
+
             document.getElementById('modalImage').src = this.querySelector('img').src;
             document.getElementById('imageModal').style.display = 'block';
         });
