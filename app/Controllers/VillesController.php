@@ -1,6 +1,7 @@
 <?php
     namespace App\Controllers;
     use App\Models\City;
+    use App\Models\Keypoint;
 
     class VillesController extends BaseController {
         function index() {
@@ -14,11 +15,14 @@
 
         function delete(int $id) {
             $city = City::find($id);
+            $keypoints = Keypoint::where('city_id', '=', $city->$id);
 
-            $city->keypoints()->detach();
+            foreach ($keypoints as $keypoint) {
+                $keypoint->city()->detach();
+            }
+
             $city->delete();
-
-            return redirect()->to(base_url() . 'liste_des_tags');
+            return redirect()->to(base_url() . 'liste_des_villes');
         }
     }
     

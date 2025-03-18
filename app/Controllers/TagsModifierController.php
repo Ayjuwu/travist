@@ -9,23 +9,20 @@
             $data['title'] = "Modifier un point clé - Travist";
             $data['current_tag'] = Tag::find($id);
 
-            if($data['current_tag'] === null) {
-                return redirect()->to(base_url() . 'liste_des_tags');
-            } else {
+            if(!is_null($data['current_tag'])) {
                 echo view('includes/header_view', $data);
                 echo view('modifyTag');
                 echo view('includes/footer');
+            } else {
+                return redirect()->to(base_url() . 'liste_des_tags');
             }
         }
 
         public function modify(int $id) {
-
-            if($id === null) {
-                return redirect()->to(base_url() . 'liste_des_tags');
-            } else {
+            if(!is_null($id)) {
                 helper(['form']);
+
                 $tag = Tag::find($id);
-    
                 $rule = [
                     'tag_name' => 'required|min_length[2]|max_length[20]|is_unique[tags.tag_name]|alpha',
                 ];
@@ -39,6 +36,8 @@
                     $data['validation'] = $this->validator;
                     $this->index($tag->id);
                 }
+            } else {
+                return redirect()->to(base_url() . 'liste_des_tags');
             }
         }
     }
