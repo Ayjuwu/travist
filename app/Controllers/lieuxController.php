@@ -19,6 +19,7 @@
             $keypoint = Keypoint::find($id);
 
             $keypoint->travels()->detach();
+            $keypoint->city()->detach();
             $keypoint->tags()->detach();
             $keypoint->delete();
 

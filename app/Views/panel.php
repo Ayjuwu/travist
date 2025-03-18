@@ -18,6 +18,14 @@
             <a href="<?php echo base_url() . 'creer_un_tag';?>" class="card" id="create_card">
                 <h4> Créer un nouveau tag </h4>
             </a>
+
+            <a href="<?php echo base_url() . 'liste_des_villes';?>" class="card" id="list_card">
+                <h4> Voir la liste des villes </h4>
+            </a>
+
+            <a href="<?php echo base_url() . 'ajouter_une_ville';?>" class="card" id="create_card">
+                <h4> Ajouter une nouvelle ville </h4>
+            </a>
         </div>
     </body>
 </html>

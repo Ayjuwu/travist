@@ -1,8 +1,9 @@
 <?php
     namespace App\Controllers;
     use App\Models\Keypoint;
+    use App\Models\City;
     use App\Models\Tag;
-
+   
     class lieuxAjoutController extends BaseController {
         public function index() {
             helper(['form']);
@@ -27,29 +28,33 @@
             ];
 
             if ($this->validate($rules)) {
-                $key_point = new Keypoint();
+                $keypoint = new Keypoint();
 
-                $key_point->key_point_name = $this->request->getVar('key_point_name');
-                $key_point->key_point_price = $this->request->getVar('key_point_price');
-                $key_point->key_point_start_date = $this->request->getVar('key_point_start_date');
-                $key_point->key_point_end_date = $this->request->getVar('key_point_end_date');
-                $key_point->key_point_nearest_city = $this->request->getVar('key_point_nearest_city');
-                $key_point->key_point_gps_x = $this->request->getVar('key_point_gps_x');
-                $key_point->key_point_gps_y = $this->request->getVar('key_point_gps_y');
-
+                $keypoint->key_point_name = $this->request->getVar('key_point_name');
+                $keypoint->key_point_price = $this->request->getVar('key_point_price');
+                $keypoint->key_point_start_date = $this->request->getVar('key_point_start_date');
+                $keypoint->key_point_end_date = $this->request->getVar('key_point_end_date');
+                $keypoint->key_point_gps_x = $this->request->getVar('key_point_gps_x');
+                $keypoint->key_point_gps_y = $this->request->getVar('key_point_gps_y');
+                
                 $image = $this->request->getFile('key_point_cover');
 
+                $countryId = $this->request->getVar('country');
+                $cityId = $this->request->getVar('city');
+                $tags = $this->request->getVar('tags');
+                
                 $imageData = file_get_contents($image->getTempName());
                 $base64Image = base64_encode($imageData);
 
-                $key_point->key_point_cover = $base64Image;
+                $keypoint->key_point_cover = $base64Image;
 
-                $key_point->save();
+                $city = City::find($cityId);
+                $keypoint->city()->attach($city->id, ['city_id' => $city->id]);
 
-                $tags = $this->request->getVar('tags');
+                $keypoint->save();
 
                 foreach ($tags as $tag => $id) {
-                    $key_point->tags()->attach($id, ['tag_id' => $id]);
+                    $keypoint->tags()->attach($id, ['tag_id' => $id]);
                 }
 
                 return redirect()->to(base_url() . 'liste_des_lieux');

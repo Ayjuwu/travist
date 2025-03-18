@@ -12,4 +12,8 @@
         public function tags() {
             return $this->belongsToMany('App\Models\Tag', 'tagged');
         }
+
+        public function city() {
+            return $this->hasMany('App\Models\City', 'located_city');
+        }
     }
