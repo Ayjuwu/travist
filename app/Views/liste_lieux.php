@@ -23,7 +23,7 @@
                                     <p class='item'> <b> Prix </b> : <i>  $keypoint->key_point_price € </i> </p> 
                                     <p class='item'> <b> Date de début </b> : <i>  $keypoint->key_point_start_date </i> </p> 
                                     <p class='item'> <b> Date de fin </b> : <i>  $keypoint->key_point_end_date </i> </p> 
-                                    <p class='item'> <b> Ville la plus proche </b> : <i> $keypoint->key_point_nearest_city </i> </p>  
+                                    <p class='item'> <b> Ville la plus proche </b> : <i>"  . $keypoint->city()->get(['city_id']) . "</i> </p>  
                                     <p class='item'> <b> Coordonnée GPS </b> : <i> $keypoint->key_point_gps_location </i> </p>
                                     <img src='data:image/png;base64, $keypoint->key_point_cover'/>
                                     <p class='item'> <b> Tag(s) </b> : "; 

@@ -11,7 +11,7 @@
             
 
             echo view('includes/header_view', $data);
-            echo view('listKeyPoints');
+            echo view('liste_lieux');
             echo view('includes/footer');
         }
 

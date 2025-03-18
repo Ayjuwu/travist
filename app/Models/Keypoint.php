@@ -14,6 +14,6 @@
         }
 
         public function city() {
-            return $this->hasMany('App\Models\City', 'located_city');
+            return $this->hasMany(Keypoint::class);
         }
     }

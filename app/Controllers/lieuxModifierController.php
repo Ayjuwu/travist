@@ -11,22 +11,20 @@
             $data['current_keypoint'] = Keypoint::find($id);
             $data['tags'] = Tag::all();
 
-            if(is_null($data['current_keypoint'])) {
-                return redirect()->to(base_url() . 'liste_des_lieux');
-            } else {
+            if(!is_null($data['current_keypoint'])) {
                 echo view('includes/header_view', $data);
-                echo view('modifyKeyPoint');
+                echo view('modifier_lieux');
                 echo view('includes/footer');
+            } else {
+                return redirect()->to(base_url() . 'liste_des_lieux');
             }
         }
 
         public function modify(int $id) {
-            if($id === null) {
-                return redirect()->to(base_url() . 'liste_des_lieux');
-            } else {
+            if(!is_null($id)) {
                 helper(['form']);
+
                 $key_point = Keypoint::find($id);
-    
                 $rules = [
                     'key_point_name' => 'required|min_length[3]|max_length[40]|alpha_space',
                     'key_point_price' => 'required|decimal',
@@ -67,6 +65,8 @@
                     $data['validation'] = $this->validator;
                     $this->index($id);
                 }
+            } else {
+                return redirect()->to(base_url() . 'liste_des_lieux');
             }
         }
     }
