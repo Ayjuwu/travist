@@ -368,14 +368,10 @@ select {
     scale: 1;
 }
 
-.item, .data {
+.item {
     font-family: var(--main-font-family);
     color: var(--main-light-color);
     font-weight: 600;
-}
-
-.datas-box {
-    width: 90%;
 }
 
 .carrousel-span {
@@ -535,12 +531,11 @@ select {
 }
 
 .selected-list {
-    display: none; /* Masquer par défaut */
     margin: 20px 0;
     padding: 15px;
     background-color: var(--second-dark-color);
     border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 12px #00000033;
 }
 
 .selected-item {
@@ -551,13 +546,13 @@ select {
     margin: 8px 0;
     background-color: var(--main-dark-color);
     border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 6px #0000001a;
     transition: all 0.3s ease;
 }
 
 .selected-item:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 12px #0000004d;
 }
 
 .selected-item span {
