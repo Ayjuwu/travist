@@ -6,6 +6,7 @@
                     if (count($keypoints) !== 0) {
                         foreach ($keypoints as $keypoint): 
                             $keypoint_tags = $keypoint->tags()->get();
+                            $keypoint_city = $keypoint->city()->first();
                             
                             echo "<span class='card' id='card'> 
                                     <span class='kp_btns_box'> 
@@ -23,8 +24,9 @@
                                     <p class='item'> <b> Prix </b> : <i>  $keypoint->key_point_price € </i> </p> 
                                     <p class='item'> <b> Date de début </b> : <i>  $keypoint->key_point_start_date </i> </p> 
                                     <p class='item'> <b> Date de fin </b> : <i>  $keypoint->key_point_end_date </i> </p> 
-                                    <p class='item'> <b> Ville la plus proche </b> : <i>"  . $keypoint->city()->get(['city_id']) . "</i> </p>  
-                                    <p class='item'> <b> Coordonnée GPS </b> : <i> $keypoint->key_point_gps_location </i> </p>
+                                    <p class='item'> <b> Ville la plus proche </b> : <i> $keypoint_city->city_name </i></p>
+                                    <p class='item'> <b> Coordonnée GPS X </b> : <i> $keypoint->key_point_gps_x </i> </p>
+                                    <p class='item'> <b> Coordonnée GPS Y </b> : <i> $keypoint->key_point_gps_y </i> </p>
                                     <img src='data:image/png;base64, $keypoint->key_point_cover'/>
                                     <p class='item'> <b> Tag(s) </b> : "; 
 

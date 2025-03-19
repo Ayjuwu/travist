@@ -1,7 +1,7 @@
 <?php
     namespace App\Models;
     use Illuminate\Database\Eloquent\Model;
-    
+
     class Keypoint extends Model {
         public $timestamps = false;
 
@@ -14,6 +14,6 @@
         }
 
         public function city() {
-            return $this->hasMany(Keypoint::class);
+            return $this->belongsTo('App\Models\City', 'city_id');
         }
     }

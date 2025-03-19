@@ -8,7 +8,6 @@
             $data['title']= "Liste des lieux - Travist";
             $data['keypoints'] = Keypoint::all();
             $data['tags'] = Tag::all();
-            
 
             echo view('includes/header_view', $data);
             echo view('liste_lieux');
@@ -19,7 +18,6 @@
             $keypoint = Keypoint::find($id);
 
             $keypoint->travels()->detach();
-            $keypoint->city()->detach();
             $keypoint->tags()->detach();
             $keypoint->delete();
 

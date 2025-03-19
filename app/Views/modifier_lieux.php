@@ -24,9 +24,14 @@
                         <input type="text" name="key_point_end_date" id="key_point_end_date" value="<?= $current_keypoint->key_point_end_date ?>">
                     </span>
 
-                    <span>
-                        <label for="key_point_nearest_city"> Ville la plus proche : </label>
-                        <input type="text" name="key_point_nearest_city" id="key_point_nearest_city" value="<?= $current_keypoint->key_point_nearest_city ?>">
+                    <span class="select_box" id="selectBoxCities">
+                        <label> Choisir une ville : </label>
+                        <select id='city' name='city'>
+                            <option selected disabled hidden> Choisissez une ville : </option>
+                            <?php foreach ($cities as $city) :
+                                echo "<option value='$city->id'>" . $city->city_name . "</option>";
+                            endforeach; ?>
+                        </select>
                     </span>
 
                     <span>
@@ -44,9 +49,9 @@
                         <input type="text" name="key_point_gps_y" id="key_point_gps_y" value="<?= $current_keypoint->key_point_gps_y ?>">
                     </span>
 
-                    <span class="select_box" id="selectBox">
+                    <span class="select_box" id="selectBoxTags">
                         <label> Choisir un tag : </label>
-                        <select id='tags[]'name='tags[]'>
+                        <select id='tags[]' name='tags[]'>
                             <option selected disabled hidden> Choisissez un tag : </option>
                             <?php foreach ($tags as $tag) :
                                 echo "<option value='$tag->id'>" . $tag->tag_name . "</option>";
@@ -69,7 +74,7 @@
 
     <script>
         const addTagBtn = document.getElementById('addTagBtn');
-        const selectBox = document.getElementById('selectBox');
+        const selectBox = document.getElementById('selectBoxTags');
         
         const select = document.createElement('select');
 
