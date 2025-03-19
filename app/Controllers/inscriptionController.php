@@ -15,9 +15,9 @@
         function createAccount() {
             helper(["form"]);
             $rules = [
-                'user_name' => 'required|min_length[3]|max_length[20]|is_unique[users.user_name]|alpha_numeric_space',
+                'user_name' => 'required|min_length[3]|max_length[20]|is_unique[users.user_name]|regex_match[/^[\p{L}\s]+$/u]',
                 'user_email' => 'required|max_length[30]|is_unique[users.user_email]|valid_email',
-                'user_password' => 'required|min_length[10]|max_length[30]|alpha_numeric_space',
+                'user_password' => 'required|min_length[10]|max_length[30]|alpha_numeric',
                 'confirm_password' => 'matches[user_password]'
             ];
 

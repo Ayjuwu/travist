@@ -18,7 +18,7 @@
     
         public function createTravel() {
             $rules = [
-                'travel_name' => 'required|min_length[2]|max_length[25]|is_unique[travel.travel_name]|alpha',
+                'travel_name' => 'required|min_length[2]|max_length[25]|is_unique[travel.travel_name]|regex_match[/^[\p{L}\s]+$/u]',
                 'people_number' => 'required|max_length[2]|numeric',
                 'keypoints' => 'required',
                 'userID' => 'required'  

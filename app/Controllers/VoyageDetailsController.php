@@ -21,7 +21,7 @@
     
         public function modifyTravel($id) {
             $rules = [
-                'travel_name' => 'required|min_length[2]|max_length[25]|alpha',
+                'travel_name' => 'required|min_length[2]|max_length[25]|regex_match[/^[\p{L}\s]+$/u]',
                 'people_number' => 'required|max_length[2]|numeric',
                 'keypoints' => 'required',
                 'userID' => 'required'  

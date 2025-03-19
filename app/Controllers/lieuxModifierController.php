@@ -28,7 +28,7 @@
 
                 $keypoint = Keypoint::find($id);
                 $rules = [
-                    'key_point_name' => 'required|min_length[3]|max_length[40]|alpha_space',
+                    'key_point_name' => 'required|min_length[3]|max_length[40]|regex_match[/^[\p{L}\s]+$/u]',
                     'key_point_price' => 'required|decimal',
                     'key_point_start_date' => 'required|min_length[10]|max_length[10]|valid_date',
                     'key_point_end_date' => 'required|min_length[10]|max_length[10]|valid_date',
