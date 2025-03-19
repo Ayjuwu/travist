@@ -368,10 +368,14 @@ select {
     scale: 1;
 }
 
-.item {
+.item, .data {
     font-family: var(--main-font-family);
     color: var(--main-light-color);
     font-weight: 600;
+}
+
+.datas-box {
+    width: 90%;
 }
 
 .carrousel-span {

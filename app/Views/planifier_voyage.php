@@ -27,16 +27,23 @@
             <div class="modal-content">
                 <span class="close-modal">&times;</span>
 
-                <p id="kpName" class=""></p>
-                <p id="kpCity" class=""></p>
-                <p id="kpStartDate" class=""></p>
-                <p id="kpEndDate" class=""></p>
-                <p id="kpPrice" class=""></p>
+                <p id="kpName" class='data'></p>
+                <br>
 
                 <img id="modalImage" class="modal-image">
-                <div class="modal-buttons">
+                <br>
+                
+                <span class='datas-box'>
+                    <p id="kpCity" class='data'></p>
+                    <p id="kpStartDate" class='data'></p>
+                    <p id="kpEndDate" class='data'></p>
+                    <p id="kpPrice" class='data'></p>
+                </span>
+                
+
+                <span class="modal-buttons">
                     <button type="button" id="addToList" class="modal-btn add-btn">Ajouter à la liste</button>
-                </div>
+                </span>
             </div>
         </div>
 
@@ -48,16 +55,16 @@
         <span class="carrousel-span">
             <div class="carrousel">
                 <?php foreach ($keypoints as $keypoint) {
-                    echo "<a href='' 
+                    echo "<a class='carrousel-item' href='' 
                             data-id='$keypoint->id' 
                             data-name='$keypoint->key_point_name' 
                             data-price='$keypoint->key_point_price' 
                             data-startDate='$keypoint->key_point_start_date' 
                             data-endDate='$keypoint->key_point_end_date' 
-                            data-city='$keypoint->key_point_nearest_city' 
+                            data-city='" . $keypoint->city()->first()->city_name ."' 
                             data-x='$keypoint->key_point_gps_x' 
-                            data-y='$keypoint->key_point_gps_y'
-                            class='carrousel-item'>
+                            data-y='$keypoint->key_point_gps_y'>
+                             
                             <img src='data:image/jpeg;base64,$keypoint->key_point_cover' 
                                 alt='$keypoint->key_point_name' 
                                 class='carrousel-image'>
@@ -80,14 +87,18 @@
 <?php endif;?>
 
 <script>
+
+// On attend que tout le DOM ait fini de charger 
 document.addEventListener('DOMContentLoaded', () => {
+
+    // on initialise les valeurs des lieux et de la carte à null (reset)
     let selectedKeypoints = [];
     let currentKeypoint = null;
     let map;
     let markers = [];
     let route = null;
 
-    // Données des points clés avec coordonnées décimales
+    // On associe les datas html aux données des lieux en php pour le javascript, dont les coordonnées décimales pour la carte
     const keypoints = <?php echo json_encode(array_map(function($kp) {
         return [
             'id' => $kp['id'],
@@ -95,9 +106,9 @@ document.addEventListener('DOMContentLoaded', () => {
             'y' => (float)$kp['key_point_gps_y'],
             'name' => $kp['key_point_name'],
             'price' => $kp['key_point_price'],
+            'city' => $kp['city_id'],
             'startDate' => $kp['key_point_start_date'],
             'endDate' => $kp['key_point_end_date'],
-            'city' => $kp['key_point_nearest_city']
         ];
     }, $keypoints->toArray())); ?>;
 
@@ -109,18 +120,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 id: parseInt(this.dataset.id),
                 name: this.dataset.name,
                 price: this.dataset.price,
-                startDate: this.dataset.startDate,
-                endDate: this.dataset.endDate,
+                startDate: this.getAttribute('data-startdate'), // getAttribute pour gérer la casse
+                endDate: this.getAttribute('data-enddate'),
                 city: this.dataset.city,
                 x: parseFloat(this.dataset.x),
                 y: parseFloat(this.dataset.y)
             };
 
             document.getElementById('kpName').innerText = currentKeypoint.name;
-            document.getElementById('kpCity').innerText = currentKeypoint.city;
-            document.getElementById('kpStartDate').innerText = currentKeypoint.startDate;
-            document.getElementById('kpEndDate').innerText = currentKeypoint.endDate;
-            document.getElementById('kpPrice').innerText = currentKeypoint.price;
+            document.getElementById('kpCity').innerText = 'Ville : ' + currentKeypoint.city;
+            document.getElementById('kpStartDate').innerText = 'Date de début de disponibilité : ' + currentKeypoint.startDate;
+            document.getElementById('kpEndDate').innerText = 'Date de fin de disponibilité : ' + currentKeypoint.endDate;
+            document.getElementById('kpPrice').innerText = 'Prix par personne (TTC) : ' + currentKeypoint.price + '€';
 
             document.getElementById('modalImage').src = this.querySelector('img').src;
             document.getElementById('imageModal').style.display = 'block';
