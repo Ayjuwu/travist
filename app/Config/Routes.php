@@ -82,7 +82,11 @@ $routes->get('profil/delete/(:num)', 'VoyageController::delete/$1', ['filter' =>
 /* VoyageDetailsController */
 
 $routes->get('details_voyage/(:num)', 'VoyageDetailsController::index/$1', ['filter' => 'FiltreUser']);
-$routes->post('/modifyTravel/(:num)', 'VoyageDetailsController::modifyTravel/$1', ['filter' => 'FiltreUser']);
+
+/* VoyageModifierController */
+
+$routes->get('profil/modifier_un_voyage/(:num)', 'VoyageModifierController::index/$1', ['filter' => 'FiltreUser']);
+$routes->post('/modifier_un_voyage/modify/(:num)', 'VoyageModifierController::modifyTravel/$1', ['filter' => 'FiltreUser']);
 
 /* WebServiceController */
 

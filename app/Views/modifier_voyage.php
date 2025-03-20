@@ -1,7 +1,7 @@
 <?= \Config\Services::validation()->listErrors() ?>
 
 <div id="modal">
-    <form action="<?= base_url('modifyTravel/' . $current_travel->id) ?>" method="POST" name="travelForm" id="travelForm">
+    <form action="<?= base_url('modifier_un_voyage/modify/' . $current_travel->id) ?>" method="POST" name="travelForm" id="travelForm">
         <h4 class="title_form"> <?= $current_travel->travel_name ?> </h4>
         <?= csrf_field() ?>
         
@@ -59,11 +59,7 @@
 
         <!-- Carte -->
         <div id="map" style="height: 400px; width: 100%;"></div>
-      
-        <div class='horizontal-box'>
-            <button type="submit" class="submitBtn" name="submit_travel">Enregistrer</button>
-            <a href='<?= base_url() ."profil/delete/$current_travel->id" ?>' class='delete'><img src='<?= base_url() ?>pictures/trash-bin-delete.svg'></a>
-        </div>
+        <button type="submit" class="submitBtn" name="submit_travel">Enregistrer</button>
     </form>
 </div>
 
