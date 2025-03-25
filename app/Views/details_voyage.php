@@ -3,7 +3,7 @@
     <a href='<?= base_url() ."profil/delete/$current_travel->id" ?>' class='delete'><img src='<?= base_url() ?>pictures/trash-bin-delete.svg'></a>
         
     <div class='selected-list'>
-        <?php foreach ($keypoints as $keypoint) {
+        <?php foreach ($current_keypoints as $keypoint) {
             echo "<div class='selected-item'><span> $keypoint->key_point_name </span></div>";
         } ?>
     </div>
@@ -15,9 +15,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         let current_keypoints = <?= $current_keypoints ?>;
-
         let map, markers = [], route = null;
-        let currentKeypoint = null;
 
         function initMap() {
             map = L.map('map').setView([48.8566, 2.3522], 4);

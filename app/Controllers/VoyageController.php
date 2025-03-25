@@ -18,22 +18,18 @@
     
         public function createTravel() {
             $rules = [
-                'travel_name' => 'required|min_length[2]|max_length[25]|is_unique[travel.travel_name]|regex_match[/^[\p{L}\s]+$/u]',
+                'travel_name' => 'required|min_length[2]|max_length[25]|regex_match[/^[\p{L}\s]+$/u]',
                 'people_number' => 'required|max_length[2]|numeric',
                 'keypoints' => 'required',
                 'userID' => 'required'  
             ];
         
             if ($this->validate($rules)) {
+                $travel = new Travel();
+
                 $userID = $this->request->getVar('userID');
         
-                // Récupérer la chaîne d'IDs séparés par des virgules
-                $keypointsString = $this->request->getVar('keypoints');
-        
-                // Convertir en tableau et filtrer les valeurs vides
-                $keypoints = array_filter(explode(',', $keypointsString));
-        
-                $travel = new Travel();
+                $keypoints = $this->request->getVar('keypoints');
         
                 $travel->travel_name = $this->request->getVar('travel_name');
                 $travel->people_number = $this->request->getVar('people_number');
@@ -55,16 +51,7 @@
                 return redirect()->to(base_url() . 'profil');
             } else {
                 $data['validation'] = $this->validator;
-                $this->index();
+                $this->index($id);
             }
-        }
-
-        public function delete(int $id) {
-            $travel = Travel::find($id);
-
-            $travel->keypoints()->detach();
-            $travel->delete();
-
-            return redirect()->to(base_url() . 'profil');
         }
     }

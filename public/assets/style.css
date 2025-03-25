@@ -182,11 +182,19 @@ a {
     color: var(--second-dark-color);
 }
 
-label {
+.datas-box {
+    width: 90%;
+}
+
+label, .data {
     margin-right: 10px;
     font-family: var(--main-font-family);
     font-weight: 600;
     color: var(--second-dark-color);
+}
+
+.data {
+    color: var(--main-light-color);
 }
 
 input {

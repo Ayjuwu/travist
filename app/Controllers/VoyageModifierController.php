@@ -8,11 +8,11 @@
             helper(['form']);
             $current_travel = Travel::find($id);
 
-            $data['title'] = "Modifier votre voyage - Travist";
+            $data['title'] = "Détails de votre voyage - Travist";
             $data['current_travel'] = Travel::find($id);
             $data['keypoints'] = Keypoint::all();
 
-            $data['current_keypoints'] = $current_travel->keypoints()->pluck('id')->toArray(); // Récupère les IDs des lieux existants
+            $data['current_keypoints'] = $current_travel->keypoints()->get();
     
             echo view('includes/header_view', $data);
             echo view('modifier_voyage');
@@ -31,10 +31,7 @@
                 $userID = $this->request->getVar('userID');
         
                 // Récupérer la chaîne d'IDs séparés par des virgules
-                $keypointsString = $this->request->getVar('keypoints');
-        
-                // Convertir en tableau et filtrer les valeurs vides
-                $keypoints = array_filter(explode(',', $keypointsString));
+                $keypoints = $this->request->getVar('keypoints');
         
                 $travel = Travel::find($id);
         
