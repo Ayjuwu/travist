@@ -73,18 +73,24 @@
         <span class="carrousel-span">
             <div class="carrousel">
                 <?php foreach ($keypoints as $keypoint) {
+                    // Récupère la ville associée
+                    $city = $keypoint->city()->first();
+                    $cityName = $city->city_name ?? '';
+                    $cityCountry = $city->city_country ?? '';
+
                     echo "<div class='carrousel-item' 
-                            data-id='$keypoint->id' 
-                            data-name='$keypoint->key_point_name' 
-                            data-price='$keypoint->key_point_price' 
-                            data-startDate='$keypoint->key_point_start_date' 
-                            data-endDate='$keypoint->key_point_end_date' 
-                            data-city='" . $keypoint->city()->first()->city_name ."' 
-                            data-x='$keypoint->key_point_gps_x' 
-                            data-y='$keypoint->key_point_gps_y'>
-                             
-                            <img src='data:image/jpeg;base64,$keypoint->key_point_cover' 
-                                alt='$keypoint->key_point_name' 
+                            data-id='{$keypoint->id}' 
+                            data-name='{$keypoint->key_point_name}' 
+                            data-price='{$keypoint->key_point_price}' 
+                            data-startDate='{$keypoint->key_point_start_date}' 
+                            data-endDate='{$keypoint->key_point_end_date}' 
+                            data-city='{$cityName}' 
+                            data-country='{$cityCountry}' 
+                            data-x='{$keypoint->key_point_gps_x}' 
+                            data-y='{$keypoint->key_point_gps_y}'>
+                                
+                            <img src='data:image/jpeg;base64,{$keypoint->key_point_cover}' 
+                                alt='{$keypoint->key_point_name}' 
                                 class='carrousel-image'>
                         </div>";
                 } ?>
@@ -294,9 +300,22 @@
         // Gestion de la recherche
         document.getElementById('searchInput').addEventListener('input', function(e) {
             const term = e.target.value.toLowerCase();
+
             document.querySelectorAll('.carrousel-item').forEach(item => {
-                const itemName = item.getAttribute('data-name').toLowerCase();
-                item.style.display = itemName.includes(term) ? 'block' : 'none';
+                const itemName = item.getAttribute('data-name').toLowerCase() || '';
+                const itemCity = item.getAttribute('data-city').toLowerCase() || '';
+                const itemCountry = item.getAttribute('data-country').toLowerCase() || '';
+
+                // On compare la chaîne de recherche avec le nom, la ville et le pays
+                if (
+                    itemName.includes(term) ||
+                    itemCity.includes(term) ||
+                    itemCountry.includes(term)
+                ) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
             });
         });
 
