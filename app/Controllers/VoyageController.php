@@ -23,7 +23,7 @@ class VoyageController extends BaseController {
 
     public function createTravel() {
         $rules = [
-            'travel_name'    => 'required|min_length[2]|max_length[25]|regex_match[/^[\p{L}\s]+$/u]',
+            'travel_name'    => 'required|min_length[2]|max_length[25]|regex_match[/^[\p{L}\s]+$/u]|is_unique[travel.travel_name]',
             'people_number'  => 'required|max_length[2]|numeric',
             'keypoints'      => 'required|is_array',
             'start_date'     => 'required|is_array',
