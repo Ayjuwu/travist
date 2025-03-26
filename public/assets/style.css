@@ -417,19 +417,12 @@ select {
     animation: slide 30s linear infinite; /* Animation lente et continue */
 }
 
-.carrousel a {
-    display: block; /* Assure que la balise <a> se comporte comme un bloc */
-    width: 300px; /* Largeur fixe pour chaque lien */
-    height: 100%;
-    flex-shrink: 0;
-    text-decoration: none; /* Supprime le soulignement des liens */
-}
-
 .carrousel-image {
     width: 100%; /* L'image remplit la balise <a> */
     height: 100%;
     object-fit: cover; /* Redimensionne l'image pour couvrir l'espace */
     border-radius: 2em;
+    cursor: pointer;
 }
 
 .carrousel-item {

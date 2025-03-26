@@ -1,9 +1,25 @@
 <?= \Config\Services::validation()->listErrors() ?>
 
+<?php if (isset($errors) && !empty($errors)): ?>
+    <div class="alert alert-danger">
+        <ul>
+            <?php foreach ($errors as $error): ?>
+                <li><?= esc($error) ?></li>
+            <?php endforeach; ?>
+        </ul>
+    </div>
+<?php endif; ?>
+
 <div id="modal">
     <form action="<?= base_url('modifier_un_voyage/modify/' . $current_travel->id) ?>" method="POST" name="travelForm" id="travelForm">
         <h4 class="title_form">Modifier votre voyage</h4>
         <?= csrf_field() ?>
+
+        <!-- Affichage des prix -->
+        <div class="price-summary">
+            <p id="individualPrice" class="price"> Prix par personne : 0€ </p>
+            <p id="totalPrice" class="price"> Prix total pour tous les voyageurs : 0€ </p>
+        </div>
         
         <span>
             <label for="travel_name">Nom du voyage :</label>
@@ -25,19 +41,21 @@
         <!-- Modale de sélection -->
         <div id="imageModal" class="modal" style="display: none;">
             <div class="modal-content">
-            <span class="close-modal">&times;</span>
+                <span class="close-modal">&times;</span>
+
                 <p id="kpName" class='data'></p>
                 <br>
 
                 <img id="modalImage" class="modal-image">
                 <br>
-
+                
                 <span class='datas-box'>
                     <p id="kpCity" class='data'></p>
                     <p id="kpStartDate" class='data'></p>
                     <p id="kpEndDate" class='data'></p>
                     <p id="kpPrice" class='data'></p>
                 </span>
+                
 
 
                 <span class="modal-buttons">
@@ -46,17 +64,16 @@
             </div>
         </div>
 
-        <!-- Liste sélectionnée -->
+        <!-- Liste des destinations -->
         <div id="selectedList" class="selected-list"></div>
 
         <!-- Stockage des IDs -->
         <div id="selectedKeypointsContainer"></div>
-
-        <!-- Carrousel avec data-attributes -->
+        
         <span class="carrousel-span">
             <div class="carrousel">
                 <?php foreach ($keypoints as $keypoint) {
-                     echo "<a class='carrousel-item' href='' 
+                    echo "<div class='carrousel-item' 
                             data-id='$keypoint->id' 
                             data-name='$keypoint->key_point_name' 
                             data-price='$keypoint->key_point_price' 
@@ -69,7 +86,7 @@
                             <img src='data:image/jpeg;base64,$keypoint->key_point_cover' 
                                 alt='$keypoint->key_point_name' 
                                 class='carrousel-image'>
-                        </a>";
+                        </div>";
                 } ?>
             </div>
         </span>
@@ -77,7 +94,7 @@
         <!-- Carte -->
         <div id="map" style="height: 400px; width: 100%;"></div>
       
-        <button type="submit" class="submitBtn" name="submit_travel">Enregistrer</button>
+        <button type="submit" class="submitBtn" name="submit_travel">Valider</button>
     </form>
 </div>
 
@@ -87,20 +104,43 @@
     </div>
 <?php endif; ?>
 
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        let selectedKeypoints = <?= json_encode($current_keypoints) ?>.map(kp => kp.id);
-        let map, markers = [], route = null;
+        let keypoints = []; // Stocke les IDs sélectionnés
+        let allKeypoints = <?= json_encode($keypoints) ?>; // Liste complète des keypoints disponibles
         let currentKeypoint = null;
+        let markers = []; // Stocke les marqueurs sur la carte
+        let route = null; // Stocke la ligne de route tracée
+        let map; // Stocke l'objet Leaflet
+        let numberOfTravelers = parseInt(document.getElementById('people_number').value, 10) || 1; // Nombre de voyageurs par défaut (à ajuster selon la situation)
 
-        const getKeypoints = () => {
-            return Array.from(document.querySelectorAll('.carrousel-item')).map(node => ({
-                id: parseInt(node.dataset.id),
-                name: node.dataset.name,
-                lat: parseFloat(node.dataset.x),
-                lng: parseFloat(node.dataset.y)
-            }));
-        };
+        // Fonction pour mettre à jour le prix total et individuel
+        function updatePrices() {
+            const individualPrice = keypoints.reduce((total, kp) => total + parseFloat(kp.price || 0), 0);
+            const totalPrice = individualPrice * numberOfTravelers;
+
+            // Mettre à jour l'interface avec les prix
+            document.getElementById('individualPrice').innerText = `Prix par personne : ${individualPrice.toFixed(2)}€`;
+            document.getElementById('totalPrice').innerText = `Prix total pour tous les voyageurs : ${totalPrice.toFixed(2)}€`;
+        }
+
+        // Mise à jour du nombre de voyageurs lorsqu'il est modifié
+        document.getElementById('people_number').addEventListener('input', function() {
+            // Récupérer la nouvelle valeur
+            const value = parseInt(this.value, 10);
+
+            // Vérifier que la valeur est un nombre valide
+            if (!isNaN(value) && value > 0) {
+                numberOfTravelers = value;
+            } else {
+                // Si la valeur est invalide, remettre la valeur par défaut (1 voyageur)
+                numberOfTravelers = 1;
+            }
+
+            // Mettre à jour les prix
+            updatePrices();
+        });
 
         function initMap() {
             map = L.map('map').setView([48.8566, 2.3522], 4);
@@ -110,86 +150,91 @@
         }
 
         function updateMap() {
+            if (!map) return; // Vérifier que la carte est bien initialisée
+
             markers.forEach(marker => map.removeLayer(marker));
             markers = [];
-            if (route) map.removeLayer(route);
 
-            const keypoints = getKeypoints();
-            const coordinates = [];
+            if (route) {
+                map.removeLayer(route);
+                route = null;
+            }
 
-            selectedKeypoints.forEach(id => {
-                const kp = keypoints.find(k => k.id === id);
-                if (kp) {
-                    const location = [kp.lat, kp.lng];
-                    coordinates.push(location);
-                    markers.push(
-                        L.marker(location)
-                            .addTo(map)
-                            .bindPopup(`<b>${kp.name}</b>`)
-                    );
+            let coordinates = [];
+
+            keypoints.forEach(kp => {
+                let keypoint = allKeypoints.find(k => k.id == kp.id || k.id == kp);
+                if (keypoint && keypoint.key_point_gps_x && keypoint.key_point_gps_y) {
+                    let coord = [parseFloat(keypoint.key_point_gps_x), parseFloat(keypoint.key_point_gps_y)];
+                    coordinates.push(coord);
+
+                    let marker = L.marker(coord)
+                        .addTo(map)
+                        .bindPopup(`<b>${keypoint.key_point_name}</b>`);
+                    markers.push(marker);
                 }
             });
 
             if (coordinates.length >= 2) {
-                route = L.polyline(coordinates, {
-                    color: '#FF6B6B',
-                    weight: 3,
-                    smoothFactor: 1
-                }).addTo(map);
+                route = L.polyline(coordinates, { color: '#FF6B6B', weight: 3 }).addTo(map);
             }
 
-            coordinates.length > 0 ?
-                map.fitBounds(L.latLngBounds(coordinates)) :
+            if (coordinates.length > 0) {
+                map.fitBounds(L.latLngBounds(coordinates));
+            } else {
                 map.setView([48.8566, 2.3522], 4);
+            }
         }
 
         function updateSelectedList() {
             const list = document.getElementById('selectedList');
-            const container = document.getElementById('selectedKeypointsContainer');
-            list.innerHTML = ''; // Vider la liste affichée
-            container.innerHTML = ''; // Vider le conteneur des inputs cachés
+            list.innerHTML = '';
 
-            // Assurer que selectedKeypoints est un tableau d'entiers
-            selectedKeypoints = selectedKeypoints.map(Number);
-
-            // Pour chaque ID sélectionné, créer un input hidden et l'ajouter au conteneur
-            selectedKeypoints.forEach(id => {
-                const hiddenInput = document.createElement('input');
-                hiddenInput.type = 'hidden';
-                hiddenInput.name = 'keypoints[]';
-                hiddenInput.value = id;
-                container.appendChild(hiddenInput);
-            });
-
-            // Afficher les lieux sélectionnés dans la liste visible
-            selectedKeypoints.forEach(id => {
-                const kp = getKeypoints().find(k => k.id === id); // Chercher le lieu par son ID
+            keypoints.forEach(kp => {
                 if (kp) {
                     const item = document.createElement('div');
                     item.className = 'selected-item';
+
                     item.innerHTML = `
                         <span>${kp.name}</span>
-                        <button onclick="removeItem(${id}, event)" class="remove-btn">×</button>
+                        <br>
+                        <div class="input-item">
+                            <label for="start_date${kp.id}">Arrivée :</label>
+                            <input type="text" id="start_date${kp.id}" name="start_date[${kp.id}]"
+                            placeholder="Début de disponibilité : ${kp.startDate}"
+                            class="datepicker full-width"
+                            data-start="${kp.startDate}" required>
+                        </div>
+
+                        <br>
+
+                        <div class="input-item">
+                            <label for="end_date${kp.id}">Départ :</label>
+                            <input type="text" id="end_date${kp.id}" name="end_date[${kp.id}]"
+                            placeholder="Fin de disponibilité : ${kp.endDate}"
+                            class="datepicker full-width"
+                            data-end="${kp.endDate}" required>
+                        </div>
+
+                        <input type="hidden" name="keypoints[]" value="${kp.id}">
+                        <button onclick="removeItem(${kp.id}, event)" class="remove-btn">×</button>
                     `;
+
                     list.appendChild(item);
                 }
             });
 
-            // Afficher ou masquer la liste en fonction de la taille
-            list.style.display = selectedKeypoints.length ? 'block' : 'none';
+            list.style.display = keypoints.length ? 'block' : 'none';
+            updateMap();
+            updatePrices(); // Mettre à jour les prix lorsque la liste change
         }
 
         window.removeItem = (id, event) => {
             event.preventDefault();
-
-            // Supprimer l'ID de la liste
-            selectedKeypoints = selectedKeypoints.filter(itemId => itemId !== id);
-
-            // Mise à jour de la liste affichée et du champ caché
+            keypoints = keypoints.filter(kp => kp.id !== id);
             updateSelectedList();
             updateMap();
         };
-
 
         document.querySelectorAll('.carrousel-item').forEach(item => {
             item.addEventListener('click', function(e) {
@@ -198,7 +243,7 @@
                     id: parseInt(this.dataset.id),
                     name: this.dataset.name,
                     price: this.dataset.price,
-                    startDate: this.getAttribute('data-startdate'), // getAttribute pour gérer la casse
+                    startDate: this.getAttribute('data-startdate'),
                     endDate: this.getAttribute('data-enddate'),
                     city: this.dataset.city,
                     x: parseFloat(this.dataset.x),
@@ -218,12 +263,26 @@
 
         document.getElementById('addToList').addEventListener('click', (e) => {
             e.preventDefault();
-            if (currentKeypoint && !selectedKeypoints.includes(currentKeypoint.id)) {
-                selectedKeypoints = [...selectedKeypoints, currentKeypoint.id];
+
+            if (currentKeypoint && !keypoints.some(kp => kp.id === currentKeypoint.id)) {
+                keypoints.push({ ...currentKeypoint }); // Copie pour éviter toute référence étrange
                 updateSelectedList();
-                updateMap();
             }
+
             closeModal();
+        });
+
+        // Initialisation des datepickers
+        const datepickers = document.querySelectorAll('.datepicker');
+        datepickers.forEach(input => {
+            const startDate = input.getAttribute('data-start');
+            const endDate = input.getAttribute('data-end');
+
+            flatpickr(input, {
+                minDate: startDate,  // Date de début disponible
+                maxDate: endDate,    // Date de fin disponible
+                dateFormat: "Y-m-d", // Format de la date (ex. 2025-03-25)
+            });
         });
 
         const closeModal = () => document.getElementById('imageModal').style.display = 'none';
@@ -232,18 +291,26 @@
             if (e.target === document.getElementById('imageModal')) closeModal();
         });
 
-        // Initialisation
-        initMap();
-        updateSelectedList();
-        updateMap();
-
         // Gestion de la recherche
         document.getElementById('searchInput').addEventListener('input', function(e) {
             const term = e.target.value.toLowerCase();
             document.querySelectorAll('.carrousel-item').forEach(item => {
-                const name = item.dataset.name.toLowerCase();
-                item.style.display = name.includes(term) ? 'block' : 'none';
+                const itemName = item.getAttribute('data-name').toLowerCase();
+                item.style.display = itemName.includes(term) ? 'block' : 'none';
             });
         });
+
+        // Fonction pour formater la date au format YYYY-MM-DD
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            if (isNaN(date)) return ''; // Vérification si la date est invalide
+            return date.toISOString().split('T')[0]; // Retourne YYYY-MM-DD
+        }
+
+        // Initialisation
+        initMap();
+        updateSelectedList();
+        updateMap();
+        updatePrices();
     });
 </script>
