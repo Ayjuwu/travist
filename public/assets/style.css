@@ -78,6 +78,19 @@ a {
     cursor: pointer;
 }
 
+p, strong {
+    font-family: var(--main-font-family);
+    font-size: .9em;
+}
+
+p {
+    color: var(--second-light-color);
+}
+
+strong {
+    color: var(--main-light-color);
+}
+
 .no_travel_text {
     margin-top: 30px;
     font-family: var(--main-font-family);
@@ -625,6 +638,123 @@ select {
     margin-top: 10px;
     transition: transform 0.3s ease, color 0.3s ease; 
 }
+
+#travelModal {
+    background-color: var(--second-dark-color);
+    padding: 2em;
+    border-radius: 1em;
+    margin: 2em auto;
+    width: 90%;
+    max-width: 1000px;
+}
+
+.travel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--main-light-color);
+    padding-bottom: 1em;
+    margin-bottom: 1em;
+}
+
+.travel-header h4 {
+    font-size: 2em;
+    color: var(--main-light-color);
+}
+
+.travel-actions {
+    display: flex;
+}
+
+.travel-actions a {
+    margin-left: 10px;
+}
+
+.travel-actions img {
+    width: 24px;
+    height: 24px;
+}
+
+.travel-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1em;
+    font-size: 1.1em;
+    color: var(--main-light-color);
+    margin-bottom: 2em;
+}
+
+.travel-meta p {
+    flex: 1 1 45%;
+}
+
+.assigned-keypoints {
+    background-color: var(--main-dark-color);
+    padding: 1.5em;
+    border-radius: 1em;
+    margin-bottom: 2em;
+}
+
+.assigned-keypoints h3 {
+    font-size: 1.8em;
+    color: var(--main-light-color);
+    margin-bottom: 1em;
+}
+
+.keypoints-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+}
+
+.keypoint-item {
+    background-color: var(--second-dark-color);
+    padding: 1em;
+    border-radius: 0.5em;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    color: var(--main-light-color);
+}
+
+.keypoint-item h4 {
+    font-size: 1.5em;
+    margin-bottom: 0.5em;
+}
+
+.keypoint-item p {
+    margin: 0.3em 0;
+}
+
+.travel-map {
+    margin-top: 1em;
+    border: 2px solid var(--main-light-color);
+    border-radius: 1em;
+}
+
+/* Si vous souhaitez ajouter d'autres sections, par exemple, pour des informations supplémentaires ou avis */
+.additional-info,
+.reviews-section,
+.related-trips {
+    margin-top: 2em;
+    background-color: var(--second-dark-color);
+    padding: 1.5em;
+    border-radius: 1em;
+}
+
+.additional-info h3,
+.reviews-section h3,
+.related-trips h3 {
+    color: var(--main-light-color);
+    font-size: 1.5em;
+    margin-bottom: 1em;
+}
+
+.extra-info-item,
+.review-item,
+.related-trip-item {
+    margin: 1em 0;
+    color: var(--main-light-color);
+}
+
 
 @keyframes slide {
     0% {

@@ -4,7 +4,7 @@
             <?php if (count($travels) !== 0) {
                 foreach ($travels as $travel) {
                     echo "<a href='" . base_url() . "details_voyage/$travel->id' class='card' id='list_card'>
-                            <h4> Voir : " . $travel->travel_name . "</h4>
+                            <h4> $travel->travel_name </h4>
                         </a>";
                 }
             } else {
