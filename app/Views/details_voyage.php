@@ -1,6 +1,6 @@
 <div id="modal">
-    <a href='<?= base_url() ."profil/modifier_un_voyage/$current_travel->id" ?>' class='modify'><img src='<?= base_url() ?>pictures/edit-pen.svg'></a>
-    <a href='<?= base_url() ."profil/delete/$current_travel->id" ?>' class='delete'><img src='<?= base_url() ?>pictures/trash-bin-delete.svg'></a>
+    <a href='<?= base_url() ."modifier_un_voyage/$current_travel->id" ?>' class='modify'><img src='<?= base_url() ?>pictures/edit-pen.svg'></a>
+    <a href='<?= base_url() ."supprimer_un_voyage/$current_travel->id" ?>' class='delete'><img src='<?= base_url() ?>pictures/trash-bin-delete.svg'></a>
         
     <div class='selected-list'>
         <?php foreach ($current_keypoints as $keypoint) {

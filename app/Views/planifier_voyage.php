@@ -1,9 +1,25 @@
 <?= \Config\Services::validation()->listErrors() ?>
 
+<?php if (isset($errors) && !empty($errors)): ?>
+    <div class="alert alert-danger">
+        <ul>
+            <?php foreach ($errors as $error): ?>
+                <li><?= esc($error) ?></li>
+            <?php endforeach; ?>
+        </ul>
+    </div>
+<?php endif; ?>
+
 <div id="modal">
     <form action="<?php echo base_url() . 'createTravel'; ?>" method="POST" name="travelForm">
         <h4 class="title_form">Planifier un nouveau voyage</h4>
         <?= csrf_field() ?>
+
+        <!-- Affichage des prix -->
+        <div class="price-summary">
+            <p id="individualPrice" class="price"> Prix par personne : 0€ </p>
+            <p id="totalPrice" class="price"> Prix total pour tous les voyageurs : 0€ </p>
+        </div>
         
         <span>
             <label for="travel_name">Nom du voyage :</label>
@@ -41,6 +57,7 @@
                 </span>
                 
 
+
                 <span class="modal-buttons">
                     <button type="button" id="addToList" class="modal-btn add-btn">Ajouter à la liste</button>
                 </span>
@@ -56,7 +73,7 @@
         <span class="carrousel-span">
             <div class="carrousel">
                 <?php foreach ($keypoints as $keypoint) {
-                    echo "<a class='carrousel-item' href='' 
+                    echo "<div class='carrousel-item' 
                             data-id='$keypoint->id' 
                             data-name='$keypoint->key_point_name' 
                             data-price='$keypoint->key_point_price' 
@@ -69,7 +86,7 @@
                             <img src='data:image/jpeg;base64,$keypoint->key_point_cover' 
                                 alt='$keypoint->key_point_name' 
                                 class='carrousel-image'>
-                        </a>";
+                        </div>";
                 } ?>
             </div>
         </span>
@@ -87,13 +104,43 @@
     </div>
 <?php endif;?>
 
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
-    // On attend que tout le DOM ait fini de charger 
     document.addEventListener('DOMContentLoaded', () => {
         let keypoints = []; // Stocke les IDs sélectionnés
         let allKeypoints = <?= json_encode($keypoints) ?>; // Liste complète des keypoints disponibles
         let currentKeypoint = null;
-        let map, markers = [], route = null;
+        let markers = []; // Stocke les marqueurs sur la carte
+        let route = null; // Stocke la ligne de route tracée
+        let map; // Stocke l'objet Leaflet
+        let numberOfTravelers = 1; // Nombre de voyageurs par défaut (à ajuster selon la situation)
+
+        // Fonction pour mettre à jour le prix total et individuel
+        function updatePrices() {
+            const individualPrice = keypoints.reduce((total, kp) => total + parseFloat(kp.price || 0), 0);
+            const totalPrice = individualPrice * numberOfTravelers;
+
+            // Mettre à jour l'interface avec les prix
+            document.getElementById('individualPrice').innerText = `Prix par personne : ${individualPrice.toFixed(2)}€`;
+            document.getElementById('totalPrice').innerText = `Prix total pour tous les voyageurs : ${totalPrice.toFixed(2)}€`;
+        }
+
+        // Mise à jour du nombre de voyageurs lorsqu'il est modifié
+        document.getElementById('people_number').addEventListener('input', function() {
+            // Récupérer la nouvelle valeur
+            const value = parseInt(this.value, 10);
+
+            // Vérifier que la valeur est un nombre valide
+            if (!isNaN(value) && value > 0) {
+                numberOfTravelers = value;
+            } else {
+                // Si la valeur est invalide, remettre la valeur par défaut (1 voyageur)
+                numberOfTravelers = 1;
+            }
+
+            // Mettre à jour les prix
+            updatePrices();
+        });
 
         function initMap() {
             map = L.map('map').setView([48.8566, 2.3522], 4);
@@ -103,66 +150,88 @@
         }
 
         function updateMap() {
+            if (!map) return; // Vérifier que la carte est bien initialisée
+
             markers.forEach(marker => map.removeLayer(marker));
             markers = [];
-            if (route) map.removeLayer(route);
 
-            const coordinates = keypoints.map(id => {
-                const kp = allKeypoints.find(k => k.id == id);
-                return kp ? [kp.key_point_gps_x, kp.key_point_gps_y] : null;
-            }).filter(coord => coord !== null);
+            if (route) {
+                map.removeLayer(route);
+                route = null;
+            }
 
-            coordinates.forEach(location => {
-                markers.push(
-                    L.marker(location)
+            let coordinates = [];
+
+            keypoints.forEach(kp => {
+                let keypoint = allKeypoints.find(k => k.id == kp.id || k.id == kp);
+                if (keypoint && keypoint.key_point_gps_x && keypoint.key_point_gps_y) {
+                    let coord = [parseFloat(keypoint.key_point_gps_x), parseFloat(keypoint.key_point_gps_y)];
+                    coordinates.push(coord);
+
+                    let marker = L.marker(coord)
                         .addTo(map)
-                        .bindPopup(`<b>${allKeypoints.find(kp => kp.key_point_gps_x == location[0] && kp.key_point_gps_y == location[1]).key_point_name}</b>`)
-                );
+                        .bindPopup(`<b>${keypoint.key_point_name}</b>`);
+                    markers.push(marker);
+                }
             });
 
             if (coordinates.length >= 2) {
-                route = L.polyline(coordinates, {
-                    color: '#FF6B6B',
-                    weight: 3,
-                    smoothFactor: 1
-                }).addTo(map);
+                route = L.polyline(coordinates, { color: '#FF6B6B', weight: 3 }).addTo(map);
             }
 
-            map.fitBounds(L.latLngBounds(coordinates.length ? coordinates : [[48.8566, 2.3522]]));
+            if (coordinates.length > 0) {
+                map.fitBounds(L.latLngBounds(coordinates));
+            } else {
+                map.setView([48.8566, 2.3522], 4);
+            }
         }
 
         function updateSelectedList() {
             const list = document.getElementById('selectedList');
-            const container = document.getElementById('selectedKeypointsContainer');
             list.innerHTML = '';
-            container.innerHTML = '';
 
-            keypoints.forEach(id => {
-                const kp = allKeypoints.find(k => k.id == id);
+            keypoints.forEach(kp => {
                 if (kp) {
                     const item = document.createElement('div');
                     item.className = 'selected-item';
-                    item.innerHTML = `
-                        <span>${kp.key_point_name}</span>
-                        <button onclick="removeItem(${id}, event)" class="remove-btn">×</button>
-                    `;
-                    list.appendChild(item);
 
-                    // Création d'un input hidden pour soumission
-                    const hiddenInput = document.createElement('input');
-                    hiddenInput.type = 'hidden';
-                    hiddenInput.name = 'keypoints[]';
-                    hiddenInput.value = id;
-                    container.appendChild(hiddenInput);
+                    item.innerHTML = `
+                        <span>${kp.name}</span>
+                        <br>
+                        <div class="input-item">
+                            <label for="start_date${kp.id}">Arrivée :</label>
+                            <input type="text" id="start_date${kp.id}" name="start_date[${kp.id}]"
+                            placeholder="Début de disponibilité : ${kp.startDate}"
+                            class="datepicker full-width"
+                            data-start="${kp.startDate}" required>
+                        </div>
+
+                        <br>
+
+                        <div class="input-item">
+                            <label for="end_date${kp.id}">Départ :</label>
+                            <input type="text" id="end_date${kp.id}" name="end_date[${kp.id}]"
+                            placeholder="Fin de disponibilité : ${kp.endDate}"
+                            class="datepicker full-width"
+                            data-end="${kp.endDate}" required>
+                        </div>
+
+                        <input type="hidden" name="keypoints[]" value="${kp.id}">
+                        <button onclick="removeItem(${kp.id}, event)" class="remove-btn">×</button>
+                    `;
+
+                    list.appendChild(item);
                 }
             });
 
             list.style.display = keypoints.length ? 'block' : 'none';
+            updateMap();
+            updatePrices(); // Mettre à jour les prix lorsque la liste change
         }
 
         window.removeItem = (id, event) => {
             event.preventDefault();
-            keypoints = keypoints.filter(itemId => itemId !== id);
+            keypoints = keypoints.filter(kp => kp.id !== id);
             updateSelectedList();
             updateMap();
         };
@@ -194,12 +263,26 @@
 
         document.getElementById('addToList').addEventListener('click', (e) => {
             e.preventDefault();
-            if (currentKeypoint && !keypoints.includes(currentKeypoint.id)) {
-                keypoints.push(currentKeypoint.id);
+
+            if (currentKeypoint && !keypoints.some(kp => kp.id === currentKeypoint.id)) {
+                keypoints.push({ ...currentKeypoint }); // Copie pour éviter toute référence étrange
                 updateSelectedList();
-                updateMap();
             }
+
             closeModal();
+        });
+
+        // Initialisation des datepickers
+        const datepickers = document.querySelectorAll('.datepicker');
+        datepickers.forEach(input => {
+            const startDate = input.getAttribute('data-start');
+            const endDate = input.getAttribute('data-end');
+
+            flatpickr(input, {
+                minDate: startDate,  // Date de début disponible
+                maxDate: endDate,    // Date de fin disponible
+                dateFormat: "Y-m-d", // Format de la date (ex. 2025-03-25)
+            });
         });
 
         const closeModal = () => document.getElementById('imageModal').style.display = 'none';
@@ -208,7 +291,7 @@
             if (e.target === document.getElementById('imageModal')) closeModal();
         });
 
-        // **Gestion de la recherche**
+        // Gestion de la recherche
         document.getElementById('searchInput').addEventListener('input', function(e) {
             const term = e.target.value.toLowerCase();
             document.querySelectorAll('.carrousel-item').forEach(item => {
@@ -217,10 +300,16 @@
             });
         });
 
+        // Fonction pour formater la date au format YYYY-MM-DD
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            if (isNaN(date)) return ''; // Vérification si la date est invalide
+            return date.toISOString().split('T')[0]; // Retourne YYYY-MM-DD
+        }
+
         // Initialisation
         initMap();
         updateSelectedList();
         updateMap();
     });
 </script>
-

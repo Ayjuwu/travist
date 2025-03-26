@@ -6,6 +6,8 @@
         <link rel="stylesheet" href="<?php echo base_url() . 'assets/style.css'; ?>">
         <!-- Inclure Leaflet CSS -->
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+        <!-- Inclure Flatpickr CSS -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
         <!-- Inclure Leaflet JavaScript -->
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 

@@ -77,15 +77,15 @@ $routes->post('/modifier_une_ville/modify/(:num)', 'VillesModifierController::mo
 $routes->get('/planifier_un_voyage', 'VoyageController::index', ['filter' => 'FiltreUser']);
 $routes->post('/createTravel', 'VoyageController::createTravel', ['filter' => 'FiltreUser']);
 
-$routes->get('profil/delete/(:num)', 'VoyageController::delete/$1', ['filter' => 'FiltreUser']);
+$routes->get('/supprimer_un_voyage/(:num)', 'VoyageController::delete/$1', ['filter' => 'FiltreUser']);
 
 /* VoyageDetailsController */
 
-$routes->get('details_voyage/(:num)', 'VoyageDetailsController::index/$1', ['filter' => 'FiltreUser']);
+$routes->get('/details_voyage/(:num)', 'VoyageDetailsController::index/$1', ['filter' => 'FiltreUser']);
 
 /* VoyageModifierController */
 
-$routes->get('profil/modifier_un_voyage/(:num)', 'VoyageModifierController::index/$1', ['filter' => 'FiltreUser']);
+$routes->get('/modifier_un_voyage/(:num)', 'VoyageModifierController::index/$1', ['filter' => 'FiltreUser']);
 $routes->post('/modifier_un_voyage/modify/(:num)', 'VoyageModifierController::modifyTravel/$1', ['filter' => 'FiltreUser']);
 
 /* WebServiceController */

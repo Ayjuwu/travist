@@ -3,10 +3,13 @@
     use Illuminate\Database\Eloquent\Model;
 
     class Keypoint extends Model {
+        protected $table = 'keypoints';
+        protected $primaryKey = 'id';
         public $timestamps = false;
 
         public function travels() {
-            return $this->belongsToMany('App\Models\Travel', 'assigned');
+            return $this->belongsToMany(Travel::class, 'assigned')
+                        ->withPivot('start_date', 'end_date');
         }
 
         public function tags() {
