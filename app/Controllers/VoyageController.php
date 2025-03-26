@@ -66,7 +66,7 @@ class VoyageController extends BaseController {
 
                     if (empty($startRaw) || empty($endRaw)) {
                         $errors[] = "Les dates du lieu " . $keypoint->key_point_name . " sont manquantes."; // Erreur pour dates manquantes
-                        $this->deleteTravel($travel->id);
+                        $this->delete($travel->id);
                         session()->setFlashdata('errors', $errors); // Stocker les erreurs dans la session
                         return $this->index(); // Retour à la page
                     }
@@ -80,7 +80,7 @@ class VoyageController extends BaseController {
                     // 1. Vérification pour chaque lieu par rapport à la période de disponibilité du keypoint
                     if ($startDate < $keypointStartDate || $endDate > $keypointEndDate) {
                         $errors[] = "Les dates du lieu " . $keypoint->key_point_name . " sont en dehors de la période disponible.";
-                        $this->deleteTravel($travel->id);
+                        $this->delete($travel->id);
                         session()->setFlashdata('errors', $errors); // Stocker les erreurs dans la session
                         return $this->index(); // Retour à la page
                     }
@@ -88,7 +88,7 @@ class VoyageController extends BaseController {
                     // 2. Vérifier que la date de fin ne soit pas inférieure à la date de début et inversement
                     if ($endDate < $startDate || $startDate > $endDate) {
                         $errors[] = "La date de fin pour le lieu " . $keypoint->key_point_name . " est avant la date de début.";
-                        $this->deleteTravel($travel->id);
+                        $this->delete($travel->id);
                         session()->setFlashdata('errors', $errors); // Stocker les erreurs dans la session
                         return $this->index(); // Retour à la page
                     }
@@ -99,7 +99,7 @@ class VoyageController extends BaseController {
                             ($endDate >= $interval['start'] && $endDate <= $interval['end']) || 
                             ($startDate <= $interval['start'] && $endDate >= $interval['end'])) {
                             $errors[] = "Les dates du lieu " . $keypoint->key_point_name . " se chevauchent avec un autre lieu.";
-                            $this->deleteTravel($travel->id);
+                            $this->delete($travel->id);
                             session()->setFlashdata('errors', $errors); // Stocker les erreurs dans la session
                             return $this->index(); // Retour à la page
                         }
@@ -133,7 +133,7 @@ class VoyageController extends BaseController {
             // Vérification des dates globales du voyage
             if ($minStartDate === null || $maxEndDate === null) {
                 $errors[] = "Les dates globales du voyage sont invalides.";
-                $this->deleteTravel($travel->id); // Supprimer le voyage si les dates sont invalides
+                $this->delete($travel->id); // Supprimer le voyage si les dates sont invalides
                 session()->setFlashdata('errors', $errors); // Stocker les erreurs dans la session
                 return $this->index(); // Retour à la page
             }
@@ -149,15 +149,6 @@ class VoyageController extends BaseController {
             return redirect()->to(base_url() . 'profil');
         } else {
             return $this->index(); // Si la validation échoue, retour à la page
-        }
-    }
-
-    // Fonction pour supprimer un voyage en cas d'erreur
-    private function deleteTravel($travelId) {
-        $travel = Travel::find($travelId);
-        if ($travel) {
-            $travel->keypoints()->detach();
-            $travel->delete();
         }
     }
 
