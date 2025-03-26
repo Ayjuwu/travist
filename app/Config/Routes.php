@@ -95,4 +95,6 @@ $routes->get('/api/getKeypoints', 'WebServiceController::getKeypoints', ['filter
 $routes->get('/api/getTags', 'WebServiceController::getTags', ['filter' => 'FiltreAdmin']);
 $routes->get('/api/getTravelsByUser/(:num)', 'WebServiceController::getTravelsByUser/$1', ['filter' => 'FiltreAdmin']);
 $routes->get('/api/getKeypointsByTag/(:num)', 'WebServiceController::getKeypointsByTag/$1', ['filter' => 'FiltreAdmin']);
-$routes->get('/api/getKeypointsByCity/(:alpha)', 'WebServiceController::getKeypointsByCity/$1', ['filter' => 'FiltreAdmin']);
+$routes->get('/api/getKeypointsByCountry/(:alpha)', 'WebServiceController::getKeypointsByCountry/$1', ['filter' => 'FiltreAdmin']);
+$routes->get('/api/getKeypointsByCity/(:num)', 'WebServiceController::getKeypointsByCity/$1', ['filter' => 'FiltreAdmin']);
+$routes->get('/api/getNearestKeypointPosition/(:segment)/(:segment)', 'WebServiceController::getNearestKeypointPosition/$1/$2', ['filter' => 'FiltreAdmin']);

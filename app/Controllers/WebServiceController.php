@@ -38,11 +38,32 @@
             }
         }
 
-        public function getKeypointsByCountry(int $country_id) {
-            
+        public function getKeypointsByCountry(string $country) {
+            $keypoints = Keypoint::join('cities', 'keypoints.city_id', '=', 'cities.id')
+                ->where('cities.city_country', '=', $country)
+                ->select('keypoints.*') // Pour récupérer uniquement les colonnes de keypoints
+                ->get();
+
+            return $this->respond($keypoints);
         }
 
         public function getKeypointsByCity(int $city_id) {
+            $keypoints = Keypoint::where('city_id', '=', $city_id)->get();
+            return $this->respond($keypoints);
+        }
+
+        public function getNearestKeypointPosition(float $latitude, float $longitude) {
+            $keypoint = Keypoint::selectRaw(
+                "*, ((key_point_gps_x - ?) * (key_point_gps_x - ?) + (key_point_gps_y - ?) * (key_point_gps_y - ?)) as distance",
+                [$latitude, $latitude, $longitude, $longitude]
+            )
+            ->orderBy("distance", "asc")
+            ->first();
+
+            if (!$keypoint) {
+                return $this->failNotFound("Aucun keypoint trouvé");
+            }
             
+            return $this->respond($keypoint);
         }
     }
