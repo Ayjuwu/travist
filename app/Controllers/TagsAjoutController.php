@@ -8,7 +8,7 @@
             $data['title']= "Créer un nouveau tag - Travist";
 
             echo view('includes/header_view', $data);
-            echo view('addTag');
+            echo view('ajouter_tag');
             echo view('includes/footer');
         }
 

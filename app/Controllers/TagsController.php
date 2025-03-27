@@ -8,7 +8,7 @@
             $data['tags'] = Tag::all();
 
             echo view('includes/header_view', $data);
-            echo view('listTags');
+            echo view('liste_tags');
             echo view('includes/footer');
         }
 

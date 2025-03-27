@@ -11,7 +11,7 @@
 
             if(!is_null($data['current_tag'])) {
                 echo view('includes/header_view', $data);
-                echo view('modifyTag');
+                echo view('modifier_tag');
                 echo view('includes/footer');
             } else {
                 return redirect()->to(base_url() . 'liste_des_tags');
