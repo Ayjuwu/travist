@@ -34,13 +34,14 @@
                 <span class="close-modal">&times;</span>
                 <p id="kpName" class="data"></p>
                 <br>
-                <img id="modalImage" class="modal-image">
+                <img id="modalImage" class="modal-image" alt="Image du lieu">
                 <br>
                 <span class="datas-box">
                     <p id="kpCity" class="data"></p>
                     <p id="kpStartDate" class="data"></p>
                     <p id="kpEndDate" class="data"></p>
                     <p id="kpPrice" class="data"></p>
+                    <p id="kpTags" class="data"></p>
                 </span>
                 <span class="modal-buttons">
                     <button type="button" id="addToList" class="modal-btn add-btn">Ajouter à la liste</button>
@@ -57,22 +58,31 @@
         <!-- Carrousel pour ajouter d'autres lieux -->
         <span class="carrousel-span">
             <div class="carrousel">
-                <?php foreach ($keypoints as $keypoint):
+            <?php 
+                foreach ($keypoints as $keypoint) {
                     $city = $keypoint->city()->first();
                     $cityName = $city ? $city->city_name : '';
-                ?>
-                    <div class="carrousel-item" 
-                         data-id="<?= $keypoint->id ?>" 
-                         data-name="<?= esc($keypoint->key_point_name) ?>" 
-                         data-price="<?= $keypoint->key_point_price ?>" 
-                         data-startdate="<?= $keypoint->key_point_start_date ?>" 
-                         data-enddate="<?= $keypoint->key_point_end_date ?>" 
-                         data-city="<?= esc($cityName) ?>" 
-                         data-x="<?= $keypoint->key_point_gps_x ?>" 
-                         data-y="<?= $keypoint->key_point_gps_y ?>">
-                        <img src="data:image/jpeg;base64,<?= $keypoint->key_point_cover ?>" alt="<?= esc($keypoint->key_point_name) ?>" class="carrousel-image">
-                    </div>
-                <?php endforeach; ?>
+                    $cityCountry = $city ? $city->city_country : '';
+                    // Récupération des tags sous forme de chaîne séparée par des virgules
+                    $tags = $keypoint->tags()->pluck('tag_name')->toArray();
+                    $tagsString = implode(', ', $tags);
+                    
+                    echo "<div class='carrousel-item' 
+                                data-id='{$keypoint->id}' 
+                                data-name='" . esc($keypoint->key_point_name) . "' 
+                                data-price='{$keypoint->key_point_price}' 
+                                data-startdate='{$keypoint->key_point_start_date}' 
+                                data-enddate='{$keypoint->key_point_end_date}' 
+                                data-city='" . esc($cityName) . "' 
+                                data-country='" . esc($cityCountry) . "'
+                                data-tag='" . esc($tagsString) . "'
+                                data-x='{$keypoint->key_point_gps_x}' 
+                                data-y='{$keypoint->key_point_gps_y}'>
+                            <img src='data:image/jpeg;base64,{$keypoint->key_point_cover}' 
+                                alt='" . esc($keypoint->key_point_name) . "' 
+                                class='carrousel-image'>
+                        </div>";
+                } ?>
             </div>
         </span>
 
@@ -93,31 +103,48 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        // Initialiser la liste des lieux déjà associés au voyage avec la propriété "preFilled" à true
-        let keypoints = <?php 
+        // Initialiser la liste des lieux déjà liés au voyage (pré-remplie) depuis $current_keypoints
+        let selectedKeypoints = <?php 
             echo json_encode(array_map(function($kp) {
                 return [
-                    'id' => $kp['id'],
-                    'name' => $kp['key_point_name'],
-                    'price' => $kp['key_point_price'],
-                    'startDate' => $kp['pivot']['start_date'],
-                    'endDate' => $kp['pivot']['end_date'],
+                    'id'            => $kp['id'],
+                    'name'          => $kp['key_point_name'],
+                    'price'         => $kp['key_point_price'],
+                    'startDate'     => $kp['pivot']['start_date'],
+                    'endDate'       => $kp['pivot']['end_date'],
                     'key_point_gps_x' => $kp['key_point_gps_x'],
                     'key_point_gps_y' => $kp['key_point_gps_y'],
-                    'city' => isset($kp['city']['city_name']) ? $kp['city']['city_name'] : '',
-                    'preFilled' => true
+                    'city'          => isset($kp['city']['city_name']) ? $kp['city']['city_name'] : '',
+                    'preFilled'     => true
                 ];
             }, $current_keypoints->toArray()));
         ?>;
-        // Liste complète de tous les keypoints disponibles
-        let allKeypoints = <?= json_encode($keypoints) ?>;
+        
+        // Tous les lieux disponibles (pour le carrousel)
+        let allKeypoints = <?php echo json_encode($keypoints->map(function($kp) {
+            $city = $kp->city()->first();
+            return [
+                'id'            => $kp->id,
+                'name'          => $kp->key_point_name,
+                'price'         => $kp->key_point_price,
+                'startDate'     => $kp->key_point_start_date,
+                'endDate'       => $kp->key_point_end_date,
+                'key_point_gps_x' => $kp->key_point_gps_x,
+                'key_point_gps_y' => $kp->key_point_gps_y,
+                'city'          => $city ? $city->city_name : '',
+                'tag'           => implode(', ', $kp->tags()->pluck('tag_name')->toArray())
+            ];
+        })->toArray()); ?>;
+        
+        // Pour manipuler la liste des lieux sélectionnés dans le formulaire
+        let keypoints = selectedKeypoints.slice();
         let currentKeypoint = null;
         let markers = [];
         let route = null;
         let map;
         let numberOfTravelers = parseInt(document.getElementById('people_number').value, 10) || 1;
 
-        // Fonction pour mettre à jour le prix total et individuel
+        // Fonction pour mettre à jour les prix
         function updatePrices() {
             const individualPrice = keypoints.reduce((total, kp) => total + parseFloat(kp.price || 0), 0);
             const totalPrice = individualPrice * numberOfTravelers;
@@ -125,7 +152,7 @@
             document.getElementById('totalPrice').innerText = `Prix total pour tous les voyageurs : ${totalPrice.toFixed(2)}€`;
         }
 
-        // Mise à jour du nombre de voyageurs lors de la modification de l'input
+        // Met à jour le nombre de voyageurs dès que l'input change
         document.getElementById('people_number').addEventListener('input', function() {
             const value = parseInt(this.value, 10);
             numberOfTravelers = (!isNaN(value) && value > 0) ? value : 1;
@@ -149,13 +176,13 @@
             }
             let coordinates = [];
             keypoints.forEach(kp => {
-                let keypoint = allKeypoints.find(k => k.id == kp.id);
-                if (keypoint && keypoint.key_point_gps_x && keypoint.key_point_gps_y) {
-                    let coord = [parseFloat(keypoint.key_point_gps_x), parseFloat(keypoint.key_point_gps_y)];
+                let found = allKeypoints.find(k => k.id == kp.id);
+                if (found && found.key_point_gps_x && found.key_point_gps_y) {
+                    let coord = [parseFloat(found.key_point_gps_x), parseFloat(found.key_point_gps_y)];
                     coordinates.push(coord);
                     let marker = L.marker(coord)
                         .addTo(map)
-                        .bindPopup(`<b>${keypoint.key_point_name}</b>`);
+                        .bindPopup(`<b>${found.name}</b>`);
                     markers.push(marker);
                 }
             });
@@ -176,7 +203,7 @@
                 if (kp) {
                     const item = document.createElement('div');
                     item.className = 'selected-item';
-                    // Pour les items pré-remplis, on utilise les dates existantes, sinon on laisse vide
+                    // Pour les items pré-remplis, utiliser leurs dates; pour les nouveaux, laisser vide.
                     const startVal = kp.preFilled ? kp.startDate : "";
                     const endVal = kp.preFilled ? kp.endDate : "";
                     item.innerHTML = `
@@ -215,6 +242,7 @@
             updateMap();
         };
 
+        // Gestion du carrousel : écoute des clics sur les items
         document.querySelectorAll('.carrousel-item').forEach(item => {
             item.addEventListener('click', function(e) {
                 e.preventDefault();
@@ -227,6 +255,7 @@
                     city: this.dataset.city,
                     x: parseFloat(this.dataset.x),
                     y: parseFloat(this.dataset.y),
+                    tag: this.dataset.tag || '',
                     preFilled: false // Nouvel item ajouté n'est pas pré-rempli
                 };
                 document.getElementById('kpName').innerText = currentKeypoint.name;
@@ -234,6 +263,7 @@
                 document.getElementById('kpStartDate').innerText = 'Date de début de disponibilité : ' + currentKeypoint.startDate;
                 document.getElementById('kpEndDate').innerText = 'Date de fin de disponibilité : ' + currentKeypoint.endDate;
                 document.getElementById('kpPrice').innerText = 'Prix par personne (TTC) : ' + currentKeypoint.price + '€';
+                document.getElementById('kpTags').innerText = 'Tags : ' + (currentKeypoint.tag || 'Aucun');
                 document.getElementById('modalImage').src = this.querySelector('img').src;
                 document.getElementById('imageModal').style.display = 'block';
             });
@@ -266,33 +296,36 @@
             if (e.target === document.getElementById('imageModal')) closeModal();
         });
 
-        // Gestion de la recherche dans le carrousel
+        // Recherche dans le carrousel (par nom, ville, pays et tags)
         document.getElementById('searchInput').addEventListener('input', function(e) {
-            const term = e.target.value.toLowerCase();
+            const term = e.target.value.trim().toLowerCase();
+
             document.querySelectorAll('.carrousel-item').forEach(item => {
-                const itemName = item.getAttribute('data-name').toLowerCase() || '';
-                const itemCity = item.getAttribute('data-city').toLowerCase() || '';
-                const itemCountry = item.getAttribute('data-country').toLowerCase() || '';
-                if (itemName.includes(term) || itemCity.includes(term) || itemCountry.includes(term)) {
-                    item.style.display = 'block';
-                } else {
-                    item.style.display = 'none';
-                }
+                const itemName = item.getAttribute('data-name') ? item.getAttribute('data-name').toLowerCase() : '';
+                const itemCity = item.getAttribute('data-city') ? item.getAttribute('data-city').toLowerCase() : '';
+                const itemCountry = item.getAttribute('data-country') ? item.getAttribute('data-country').toLowerCase() : '';
+                const itemTags = item.getAttribute('data-tag') ? item.getAttribute('data-tag').toLowerCase() : '';
+
+                // Vérifier si un des champs contient le terme de recherche
+                const isMatch = itemName.includes(term) || itemCity.includes(term) || itemCountry.includes(term) || itemTags.includes(term);
+
+                // Gérer l'affichage
+                item.style.display = isMatch ? '' : 'none';
             });
         });
 
-        // Fonction pour formater une date au format YYYY-MM-DD
         function formatDate(dateString) {
             const date = new Date(dateString);
             if (isNaN(date)) return '';
             return date.toISOString().split('T')[0];
         }
 
-        // Initialisation
+        // Initialisation de la carte et mise à jour des listes et prix
         initMap();
         updateSelectedList();
         updateMap();
         updatePrices();
     });
 </script>
+
 
