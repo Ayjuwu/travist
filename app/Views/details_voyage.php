@@ -28,7 +28,7 @@
                     <p><strong>Lieux :</strong> <?= esc($keypoint->key_point_name) ?></p>
                     <p><strong>Durée de visite : </strong><em><?= esc(date('d/m/Y', strtotime($keypoint->pivot->start_date))) ?> - <?= esc(date('d/m/Y', strtotime($keypoint->pivot->end_date))) ?></em></p>
                     <p><strong>Ville :</strong> <?= esc($keypoint->city->city_name) ?></p>
-                    <p><strong>Prix :</strong> <?= esc(number_format($keypoint->key_point_price, 2)) ?> €</p>
+                    <p><strong>Prix total :</strong> <?= esc(number_format($keypoint->key_point_price, 2)) ?> €</p>
                 </div>
             <?php endforeach; ?>
         </div>

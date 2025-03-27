@@ -46,7 +46,7 @@
     
                 // Essayer de sauvegarder le voyage
                 if (!$travel->save()) {
-                    return $this->index(); // Si la sauvegarde échoue, retour à la page
+                    return $this->index($id); // Si la sauvegarde échoue, retour à la page
                 }
     
                 // Initialisation des variables pour les dates du voyage global
@@ -70,7 +70,7 @@
                             $errors[] = "Les dates du lieu " . $keypoint->key_point_name . " sont manquantes."; // Erreur pour dates manquantes
                             $this->delete($travel->id);
                             session()->setFlashdata('errors', $errors); // Stocker les erreurs dans la session
-                            return $this->index(); // Retour à la page
+                            return $this->index($id); // Retour à la page
                         }
     
                         $startDate = new DateTime($startRaw);
@@ -84,7 +84,7 @@
                             $errors[] = "Les dates du lieu " . $keypoint->key_point_name . " sont en dehors de la période disponible.";
                             $this->delete($travel->id);
                             session()->setFlashdata('errors', $errors); // Stocker les erreurs dans la session
-                            return $this->index(); // Retour à la page
+                            return $this->index($id); // Retour à la page
                         }
     
                         // 2. Vérifier que la date de fin ne soit pas inférieure à la date de début et inversement
@@ -92,7 +92,7 @@
                             $errors[] = "La date de fin pour le lieu " . $keypoint->key_point_name . " est avant la date de début.";
                             $this->delete($travel->id);
                             session()->setFlashdata('errors', $errors); // Stocker les erreurs dans la session
-                            return $this->index(); // Retour à la page
+                            return $this->index($id); // Retour à la page
                         }
     
                         // 3. Vérification des chevauchements avec les autres points clés déjà sélectionnés
@@ -103,7 +103,7 @@
                                 $errors[] = "Les dates du lieu " . $keypoint->key_point_name . " se chevauchent avec un autre lieu.";
                                 $this->delete($travel->id);
                                 session()->setFlashdata('errors', $errors); // Stocker les erreurs dans la session
-                                return $this->index(); // Retour à la page
+                                return $this->index($id); // Retour à la page
                             }
                         }
     
@@ -137,7 +137,7 @@
                     $errors[] = "Les dates globales du voyage sont invalides.";
                     $this->delete($travel->id); // Supprimer le voyage si les dates sont invalides
                     session()->setFlashdata('errors', $errors); // Stocker les erreurs dans la session
-                    return $this->index(); // Retour à la page
+                    return $this->index($id); // Retour à la page
                 }
     
                 // Mise à jour du voyage avec les dates finales et le prix total
@@ -150,7 +150,7 @@
     
                 return redirect()->to(base_url() . 'profil');
             } else {
-                return $this->index(); // Si la validation échoue, retour à la page
+                return $this->index($id); // Si la validation échoue, retour à la page
             }
         }
 
