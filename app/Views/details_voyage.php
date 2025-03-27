@@ -23,6 +23,15 @@
         <h4>TRAJET</h4>
         <br>
         <div class="keypoints-list">
+            <?php 
+                /* $current_keypoints_array = $current_keypoints->toArray();
+
+                // Trier les keypoints par date de début (start_date)
+                usort($current_keypoints_array, function($a, $b) {
+                    return strtotime($a->pivot->start_date) - strtotime($b->pivot->start_date);
+                }); */
+            ?>
+
             <?php foreach ($current_keypoints as $keypoint): ?>
                 <div class="keypoint-item">
                     <p><strong>Lieux :</strong> <?= esc($keypoint->key_point_name) ?></p>
