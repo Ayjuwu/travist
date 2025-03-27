@@ -52,6 +52,9 @@
             
                     $keypoint->city_id = $this->request->getVar('city'); // Assigner directement l'ID de la ville
 
+                    // Gestion de la checkbox (si non cochée, retourne 0)
+                    $keypoint->is_altered_keypoint = $this->request->getVar('is_altered_keypoint') ? 1 : 0;
+
                     $keypoint->tags()->detach();
                     $keypoint->save();
             

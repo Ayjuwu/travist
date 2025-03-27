@@ -38,12 +38,17 @@
                 $keypoint->key_point_gps_x = $this->request->getVar('key_point_gps_x');
                 $keypoint->key_point_gps_y = $this->request->getVar('key_point_gps_y');
         
+                // Gestion de l'image
                 $image = $this->request->getFile('key_point_cover');
                 $imageData = file_get_contents($image->getTempName());
                 $base64Image = base64_encode($imageData);
                 $keypoint->key_point_cover = $base64Image;
         
-                $keypoint->city_id = $this->request->getVar('city'); // Assigner directement l'ID de la ville
+                // Récupération de l'ID de la ville
+                $keypoint->city_id = $this->request->getVar('city'); 
+        
+                // Gestion de la checkbox (si non cochée, retourne 0)
+                $keypoint->is_altered_keypoint = $this->request->getVar('is_altered_keypoint') ? 1 : 0;
         
                 $keypoint->save();
         
@@ -60,5 +65,5 @@
                 $data['validation'] = $this->validator;
                 return $this->index();
             }
-        }        
+        }           
     }

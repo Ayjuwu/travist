@@ -60,6 +60,11 @@
                         <button type="button" id="addTagBtn"> + </button>
                     </span>
 
+                    <span>
+                        <label for="is_altered_keypoint"> Le lieux rencontre actuellement un problème pour la visite ? </label>
+                        <input type="checkbox" name="is_altered_keypoint" id="is_altered_keypoint" value="1">
+                    </span>
+
                     <button type="submit" class="submitBtn" name="submit_key_point"> Valider </button>
                 </form>
             </div>
