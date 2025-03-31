@@ -6,22 +6,22 @@
                     <?= csrf_field() ?>
                     <span>
                         <label for="key_point_name"> Nom du lieu : </label>
-                        <input type="text" name="key_point_name" id="key_point_name" value="<?= $current_keypoint->key_point_name ?>">
+                        <input type="text" name="key_point_name" id="key_point_name" value="<?= esc($current_keypoint->key_point_name) ?>">
                     </span>
                         
                     <span>
                         <label for="key_point_price"> Prix : </label>
-                        <input type="text" name="key_point_price" id="key_point_price" value="<?= $current_keypoint->key_point_price ?>">
+                        <input type="text" name="key_point_price" id="key_point_price" value="<?= esc($current_keypoint->key_point_price) ?>">
                     </span>
 
                     <span>
                         <label for="key_point_start_date"> Mois du début de disponibilité : </label>
-                        <input type="text" name="key_point_start_date" id="key_point_start_date" value="<?= $current_keypoint->key_point_start_date ?>">
+                        <input type="text" name="key_point_start_date" id="key_point_start_date" value="<?= esc($current_keypoint->key_point_start_date) ?>">
                     </span>
 
                     <span>
                         <label for="key_point_end_date"> Mois du début de disponibilité : </label>
-                        <input type="text" name="key_point_end_date" id="key_point_end_date" value="<?= $current_keypoint->key_point_end_date ?>">
+                        <input type="text" name="key_point_end_date" id="key_point_end_date" value="<?= esc($current_keypoint->key_point_end_date) ?>">
                     </span>
 
                     <span class="select_box" id="selectBoxCities">
@@ -29,7 +29,7 @@
                         <select id='city' name='city'>
                             <option selected disabled hidden> Choisissez une ville : </option>
                             <?php foreach ($cities as $city) :
-                                echo "<option value='$city->id'>" . $city->city_name . "</option>";
+                                echo "<option value='$city->id'>" . esc($city->city_name) . "</option>";
                             endforeach; ?>
                         </select>
                     </span>
@@ -41,12 +41,12 @@
 
                     <span>
                         <label for="key_point_gps_x"> Coordonnées X : </label>
-                        <input type="text" name="key_point_gps_x" id="key_point_gps_x" value="<?= $current_keypoint->key_point_gps_x ?>">
+                        <input type="text" name="key_point_gps_x" id="key_point_gps_x" value="<?= esc($current_keypoint->key_point_gps_x) ?>">
                     </span>
 
                     <span>
                         <label for="key_point_gps_y"> Coordonnées Y : </label>
-                        <input type="text" name="key_point_gps_y" id="key_point_gps_y" value="<?= $current_keypoint->key_point_gps_y ?>">
+                        <input type="text" name="key_point_gps_y" id="key_point_gps_y" value="<?= esc($current_keypoint->key_point_gps_y) ?>">
                     </span>
 
                     <span class="select_box" id="selectBoxTags">
@@ -54,7 +54,7 @@
                         <select id='tags[]' name='tags[]'>
                             <option selected disabled hidden> Choisissez un tag : </option>
                             <?php foreach ($tags as $tag) :
-                                echo "<option value='$tag->id'>" . $tag->tag_name . "</option>";
+                                echo "<option value='$tag->id'>" . esc($tag->tag_name) . "</option>";
                             endforeach; ?>
                         </select>
                         <button type="button" id="addTagBtn"> + </button>
@@ -92,7 +92,7 @@
                     <select name='tags[]'>
                         <option selected disabled hidden> Choisissez un tag : </option>
                         <?php foreach ($tags as $tag) :
-                            echo "<option value='$tag->id'>$tag->tag_name</option>";
+                            echo "<option value='$tag->id'>" . esc($tag->tag_name) . "</option>";
                         endforeach; ?>
                     </select>
                 `;

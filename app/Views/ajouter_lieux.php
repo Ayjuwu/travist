@@ -55,7 +55,7 @@
                         <select id='tags[]' name='tags[]'>
                             <option selected disabled hidden> Choisissez un tag : </option>
                             <?php foreach ($tags as $tag) :
-                                echo "<option value='$tag->id'>" . $tag->tag_name . "</option>";
+                                echo "<option value='$tag->id'>" . esc($tag->tag_name) . "</option>";
                             endforeach; ?>
                         </select>
                         <button type="button" id="addTagBtn"> + </button>
@@ -93,7 +93,7 @@
                     <select name='tags[]'>
                         <option selected disabled hidden> Choisissez un tag : </option>
                         <?php foreach ($tags as $tag) :
-                            echo "<option value='$tag->id'>$tag->tag_name</option>";
+                            echo "<option value='$tag->id'>" . esc($tag->tag_name) . "</option>";
                         endforeach; ?>
                     </select>
                 `;

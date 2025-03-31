@@ -6,7 +6,7 @@
                     <?= csrf_field() ?>
                     <span>
                         <label for="tag_name"> Nom du tag : </label>
-                        <input type="text" name="tag_name" id="tag_name" value="<?= str_replace('#', '', $current_tag->tag_name) ?>">
+                        <input type="text" name="tag_name" id="tag_name" value="<?= str_replace('#', '', esc($current_tag->tag_name)) ?>">
                     </span>
 
                     <button type="submit" class="submitBtn" name="submit_tag"> Valider </button>

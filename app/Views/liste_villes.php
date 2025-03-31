@@ -18,8 +18,8 @@
                                         </span>
         
                                         <p class='item'> <b> ID </b> : <i>" . "$city->id" . "</i> </p> 
-                                        <p class='item'> <b> Nom </b> : <i> " . "$city->city_name" . "</i> </p>  
-                                        <p class='item'> <b> Pays </b> : <i> " . "$city->city_country" . "</i> </p>
+                                        <p class='item'> <b> Nom </b> : <i>" . esc($city->city_name) . "</i> </p>  
+                                        <p class='item'> <b> Pays </b> : <i>" . esc($city->city_country) . "</i> </p>
                                     </span>  \n";
                             ?>
                         <?php endforeach; 

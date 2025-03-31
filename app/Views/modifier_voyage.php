@@ -7,8 +7,8 @@
 
         <!-- Affichage des prix -->
         <div class="price-summary">
-            <p id="individualPrice" class="price">Prix par personne : <?= number_format($current_travel->individual_price, 2) ?> €</p>
-            <p id="totalPrice" class="price">Prix total pour tous les voyageurs : <?= number_format($current_travel->total_price, 2) ?> €</p>
+            <p id="individualPrice" class="price">Prix par personne : <?= number_format(esc($current_travel->individual_price, 2)) ?> €</p>
+            <p id="totalPrice" class="price">Prix total pour tous les voyageurs : <?= number_format(esc($current_travel->total_price, 2)) ?> €</p>
         </div>
         
         <span class="form-group">
@@ -70,14 +70,14 @@
                     echo "<div class='carrousel-item' 
                                 data-id='{$keypoint->id}' 
                                 data-name='" . esc($keypoint->key_point_name) . "' 
-                                data-price='{$keypoint->key_point_price}' 
-                                data-startdate='{$keypoint->key_point_start_date}' 
-                                data-enddate='{$keypoint->key_point_end_date}' 
+                                data-price='" . esc($keypoint->key_point_price) . "' 
+                                data-startdate='" . esc($keypoint->key_point_start_date) . "' 
+                                data-enddate='" . esc($keypoint->key_point_end_date) . "' 
                                 data-city='" . esc($cityName) . "' 
                                 data-country='" . esc($cityCountry) . "'
                                 data-tag='" . esc($tagsString) . "'
-                                data-x='{$keypoint->key_point_gps_x}' 
-                                data-y='{$keypoint->key_point_gps_y}'>
+                                data-x='" . esc($keypoint->key_point_gps_x) . "' 
+                                data-y='" . esc($keypoint->key_point_gps_y) . "'>
                             <img src='data:image/jpeg;base64,{$keypoint->key_point_cover}' 
                                 alt='" . esc($keypoint->key_point_name) . "' 
                                 class='carrousel-image'>
@@ -125,14 +125,14 @@
             $city = $kp->city()->first();
             return [
                 'id'            => $kp->id,
-                'name'          => $kp->key_point_name,
-                'price'         => $kp->key_point_price,
-                'startDate'     => $kp->key_point_start_date,
-                'endDate'       => $kp->key_point_end_date,
-                'key_point_gps_x' => $kp->key_point_gps_x,
-                'key_point_gps_y' => $kp->key_point_gps_y,
-                'city'          => $city ? $city->city_name : '',
-                'tag'           => implode(', ', $kp->tags()->pluck('tag_name')->toArray())
+                'name'          => esc($kp->key_point_name),
+                'price'         => esc($kp->key_point_price),
+                'startDate'     => esc($kp->key_point_start_date),
+                'endDate'       => esc($kp->key_point_end_date),
+                'key_point_gps_x' => esc($kp->key_point_gps_x),
+                'key_point_gps_y' => esc($kp->key_point_gps_y),
+                'city'          => esc($city) ? esc($city->city_name) : '',
+                'tag'           => esc(implode(', ', $kp->tags()->pluck('tag_name')->toArray()))
             ];
         })->toArray()); ?>;
         

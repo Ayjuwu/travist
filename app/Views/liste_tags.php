@@ -18,7 +18,7 @@
                                         </span>
         
                                         <p class='item'> <b> ID </b> : <i>" . "$tag->id" . "</i> </p> 
-                                        <p class='item'> <b> Nom </b> : <i> " . "$tag->tag_name" . "</i> </p>  
+                                        <p class='item'> <b> Nom </b> : <i>" . esc($tag->tag_name) . "</i> </p>  
                                     </span>  \n";
                             ?>
                         <?php endforeach; 
