@@ -38,6 +38,10 @@
                     <p><strong>Durée de visite : </strong><em><?= esc(date('d/m/Y', strtotime($keypoint->pivot->start_date))) ?> - <?= esc(date('d/m/Y', strtotime($keypoint->pivot->end_date))) ?></em></p>
                     <p><strong>Ville :</strong> <?= esc($keypoint->city->city_name) ?></p>
                     <p><strong>Prix total :</strong> <?= esc(number_format($keypoint->key_point_price, 2)) ?> €</p>
+
+                    <?php if($keypoint->is_altered_keypoint) : ?>
+                        <p class="alert">Attention ! Ce lieux rencontre actuellement des problèmes de disponibilité !</p>
+                    <?php endif; ?>
                 </div>
             <?php endforeach; ?>
         </div>
