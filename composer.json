@@ -12,6 +12,7 @@
     "require": {
         "php": "^8.1",
         "codeigniter4/framework": "^4.0",
+        "firebase/php-jwt": "^6.11",
         "nabcellent/codeigniter4-eloquent": "^1.1"
     },
     "require-dev": {

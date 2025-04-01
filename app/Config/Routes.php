@@ -98,3 +98,9 @@ $routes->get('/api/getKeypointsByTag/(:num)', 'WebServiceController::getKeypoint
 $routes->get('/api/getKeypointsByCountry/(:alpha)', 'WebServiceController::getKeypointsByCountry/$1', ['filter' => 'FiltreAdmin']);
 $routes->get('/api/getKeypointsByCity/(:num)', 'WebServiceController::getKeypointsByCity/$1', ['filter' => 'FiltreAdmin']);
 $routes->get('/api/getNearestKeypointPosition/(:segment)/(:segment)', 'WebServiceController::getNearestKeypointPosition/$1/$2', ['filter' => 'FiltreAdmin']);
+
+
+$routes->post("/api/register", "WebServiceController::register");
+$routes->post("/api/login", "WebServiceController::login");
+$routes->get("/api/profile", "WebServiceController::details");
+
