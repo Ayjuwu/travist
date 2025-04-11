@@ -90,17 +90,16 @@ $routes->post('/modifier_un_voyage/modify/(:num)', 'VoyageModifierController::mo
 
 /* WebServiceController */
 
-$routes->get('/api/getTravels', 'WebServiceController::getTravels', ['filter' => 'FiltreAdmin']);
-$routes->get('/api/getKeypoints', 'WebServiceController::getKeypoints', ['filter' => 'FiltreAdmin']);
-$routes->get('/api/getTags', 'WebServiceController::getTags', ['filter' => 'FiltreAdmin']);
-$routes->get('/api/getTravelsByUser/(:num)', 'WebServiceController::getTravelsByUser/$1', ['filter' => 'FiltreAdmin']);
-$routes->get('/api/getKeypointsByTag/(:num)', 'WebServiceController::getKeypointsByTag/$1', ['filter' => 'FiltreAdmin']);
-$routes->get('/api/getKeypointsByCountry/(:alpha)', 'WebServiceController::getKeypointsByCountry/$1', ['filter' => 'FiltreAdmin']);
-$routes->get('/api/getKeypointsByCity/(:num)', 'WebServiceController::getKeypointsByCity/$1', ['filter' => 'FiltreAdmin']);
-$routes->get('/api/getNearestKeypointPosition/(:segment)/(:segment)', 'WebServiceController::getNearestKeypointPosition/$1/$2', ['filter' => 'FiltreAdmin']);
-
-
 $routes->post("/api/register", "WebServiceController::register");
 $routes->post("/api/login", "WebServiceController::login");
 $routes->get("/api/profile", "WebServiceController::details");
+
+$routes->get('/api/getTravels', 'WebServiceController::getTravels');
+$routes->get('/api/getKeypoints', 'WebServiceController::getKeypoints');
+$routes->get('/api/getTags', 'WebServiceController::getTags');
+$routes->get('/api/getTravelsByUser/(:num)', 'WebServiceController::getTravelsByUser/$1');
+$routes->get('/api/getKeypointsByTag/(:num)', 'WebServiceController::getKeypointsByTag/$1');
+$routes->get('/api/getKeypointsByCountry/(:alpha)', 'WebServiceController::getKeypointsByCountry/$1');
+$routes->get('/api/getKeypointsByCity/(:num)', 'WebServiceController::getKeypointsByCity/$1');
+$routes->get('/api/getNearestKeypointPosition/(:segment)/(:segment)', 'WebServiceController::getNearestKeypointPosition/$1/$2');
 
