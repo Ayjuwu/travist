@@ -40,6 +40,14 @@
             return $this->respond($travels);
         }
 
+        public function getKeypointById(int $id) {
+            $keypoint = Keypoint::find($id);
+
+            if(!is_null($keypoint)) {
+                return $this->respond($keypoint);
+            }
+        }
+
         public function getKeypointsByTag(int $tag_id) {
             $tag = Tag::find($tag_id);
 

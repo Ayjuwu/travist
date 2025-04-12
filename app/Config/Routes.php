@@ -98,6 +98,7 @@ $routes->get('/api/getTravels', 'WebServiceController::getTravels');
 $routes->get('/api/getKeypoints', 'WebServiceController::getKeypoints');
 $routes->get('/api/getTags', 'WebServiceController::getTags');
 $routes->get('/api/getTravelsByUser/(:num)', 'WebServiceController::getTravelsByUser/$1');
+$routes->get('/api/getKeypointById/(:num)', 'WebServiceController::getKeypointById/$1');
 $routes->get('/api/getKeypointsByTag/(:num)', 'WebServiceController::getKeypointsByTag/$1');
 $routes->get('/api/getKeypointsByCountry/(:alpha)', 'WebServiceController::getKeypointsByCountry/$1');
 $routes->get('/api/getKeypointsByCity/(:num)', 'WebServiceController::getKeypointsByCity/$1');
