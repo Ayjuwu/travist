@@ -44,6 +44,15 @@
             }
         }
 
+        public function getCityByKeypoint(int $id) {
+            $keypoint = Keypoint::find($id);
+
+            if(!is_null($keypoint)) {
+                $city = $keypoint->city()->get()->first();
+                return $this->respond($city);
+            }
+        }
+
         public function getTravelsByUser(int $user_id) {
             $travels = Travel::where('user_id', '=', $user_id)->get();
             return $this->respond($travels);
