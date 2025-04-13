@@ -291,4 +291,132 @@
                 return $this->fail($response,401);
             }
         }
+
+        public function createTravel() {
+            // Récupérer et décoder les données JSON envoyées via POST
+            $data = $this->request->getJSON(true);
+        
+            // Vérifier que les champs obligatoires sont présents
+            if (!isset($data['travel_name'], 
+                       $data['people_number'], 
+                       $data['user_id'], 
+                       $data['travel_start_date'], 
+                       $data['travel_end_date'], 
+                       $data['individual_price'], 
+                       $data['total_price'])) {
+                
+                return $this->failValidationError('Informations manquantes pour créer un voyage');
+            }
+            
+            try {
+                // Utilisation d'Eloquent pour créer l'enregistrement Travel
+                // Mass assignment grâce à la propriété $fillable de votre modèle Travel
+                $travel = Travel::create([
+                    'travel_name'        => $data['travel_name'],
+                    'people_number'      => $data['people_number'],
+                    'user_id'            => $data['user_id'],
+                    'travel_start_date'  => $data['travel_start_date'],
+                    'travel_end_date'    => $data['travel_end_date'],
+                    'individual_price'   => $data['individual_price'],
+                    'total_price'        => $data['total_price']
+                ]);
+                
+                // Si un tableau de keypoints est envoyé, on rattache chaque keypoint à ce voyage
+                if (isset($data['keypoints']) && is_array($data['keypoints'])) {
+                    foreach ($data['keypoints'] as $kp) {
+                        // Chaque item doit contenir keypoint_id, start_date et end_date
+                        if (isset($kp['keypoint_id'], $kp['start_date'], $kp['end_date'])) {
+                            // Utilisation de la relation définie dans le modèle Travel (Eloquent)
+                            // La méthode attach permet d'insérer dans la table pivot 'assigned'
+                            $travel->keypoints()->attach($kp['keypoint_id'], [
+                                'start_date' => $kp['start_date'],
+                                'end_date'   => $kp['end_date']
+                            ]);
+                        }
+                    }
+                }
+                
+                // Préparer la réponse en cas de succès
+                $response = [
+                    'success' => true,
+                    'status'  => 200,
+                    'error'   => false,
+                    'message' => 'Voyage créé avec succès',
+                    'data'    => [
+                        'travel' => $travel
+                    ]
+                ];
+                
+                return $this->respond($response, 200);
+                
+            } catch (\Exception $ex) {
+                // En cas d'erreur, renvoyer une réponse avec le message d'erreur
+                $response = [
+                    'status'   => 500,
+                    'error'    => true,
+                    'message'  => 'Erreur lors de la création du voyage : ' . $ex->getMessage(),
+                    'data'     => []
+                ];
+                return $this->fail($response, 500);
+            }
+        }
+
+        public function insertAssigned() {
+            // Récupérer et décoder les données JSON envoyées via POST
+            $data = $this->request->getJSON(true);
+            
+            // Vérifier que les champs obligatoires sont présents
+            if (!isset($data['travel_id'], $data['keypoints']) || !is_array($data['keypoints'])) {
+                return $this->failValidationError('Informations manquantes pour l\'assignation des keypoints');
+            }
+        
+            log_message('info', 'Données reçues pour insertAssigned: ' . print_r($data, true));
+        
+            // Vérifier si le voyage existe
+            $travel = Travel::find($data['travel_id']);
+            if (!$travel) {
+                return $this->failNotFound('Voyage non trouvé');
+            }
+        
+            // Boucler à travers les keypoints et les associer au voyage
+            foreach ($data['keypoints'] as $kp) {
+                if (isset($kp['keypoint_id'], $kp['start_date'], $kp['end_date'])) {
+                    $travel->keypoints()->attach($kp['keypoint_id'], [
+                        'start_date' => $kp['start_date'],
+                        'end_date'   => $kp['end_date']
+                    ]);
+                } else {
+                    return $this->failValidationError('Informations manquantes pour un keypoint');
+                }
+            }
+        
+            // Retourner une réponse de succès
+            $response = [
+                'success' => true,
+                'status'  => 200,
+                'message' => 'Keypoints assignés avec succès',
+                'data'    => [
+                    'travel_id' => $travel->id,
+                    'assigned_keypoints' => $data['keypoints']
+                ]
+            ];
+        
+            return $this->respond($response, 200);
+        }        
+        
+        public function failValidationError($message = "Validation error") {
+            return $this->response->setStatusCode(400)->setJSON([
+                'title' => 'Error',
+                'type' => 'Validation Error',
+                'message' => $message
+            ]);
+        }
+        
+        public function failNotFound($message = "Not Found") {
+            return $this->response->setStatusCode(404)->setJSON([
+                'title' => 'Error',
+                'type' => 'Not Found',
+                'message' => $message
+            ]);
+        }        
     }

@@ -106,3 +106,6 @@ $routes->get('/api/getKeypointsByCountry/(:alpha)', 'WebServiceController::getKe
 $routes->get('/api/getKeypointsByCity/(:num)', 'WebServiceController::getKeypointsByCity/$1');
 $routes->get('/api/getNearestKeypointPosition/(:segment)/(:segment)', 'WebServiceController::getNearestKeypointPosition/$1/$2');
 
+$routes->post('/api/createTravel', 'WebServiceController::createTravel');
+$routes->post('/api/insertAssigned', 'WebServiceController::insertAssigned');
+
