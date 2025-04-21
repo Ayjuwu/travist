@@ -34,7 +34,11 @@
                                 foreach ($tags as $tag) {
                                     $matching_tag = $tag::find($keypoint_tag->pivot->tag_id);
                                 } 
-                                echo "<i>" . esc($matching_tag->tag_name) . "</i>";
+                                echo "<i>" . esc($matching_tag->tag_name) . " " . "</i>";
+                            }
+
+                            if ($keypoint_tags->isEmpty()) {
+                                echo "<i>" . "#NaN" . "</i>";
                             }
 
                             echo "</p> </span> \n";

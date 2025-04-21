@@ -6,7 +6,8 @@
                     if (count($tags) !== 0) {
                         foreach ($tags as $tag): ?>
                             <?php 
-                                echo "<span class='card'> 
+                                if ($tag->id !== 0) {
+                                    echo "<span class='card'> 
                                         <span class='kp_btns_box'> 
                                             <a href='" . base_url() . "modifier_un_tag/$tag->id' class='modify'> 
                                                 <img src='" . base_url() . "pictures/edit-pen.svg'> 
@@ -19,7 +20,8 @@
         
                                         <p class='item'> <b> ID </b> : <i>" . "$tag->id" . "</i> </p> 
                                         <p class='item'> <b> Nom </b> : <i>" . esc($tag->tag_name) . "</i> </p>  
-                                    </span>  \n";
+                                    </span> \n";
+                                }
                             ?>
                         <?php endforeach; 
                         

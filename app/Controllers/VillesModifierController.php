@@ -24,8 +24,8 @@
 
                 $city = City::find($id);
                 $rules = [
-                    'city_name' => 'required|min_length[2]|max_length[25]|regex_match[/^[\p{L}\s]+$/u]',
-                    'city_country' => 'required|min_length[2]|max_length[30]|regex_match[/^[\p{L}\s]+$/u]',
+                    'city_name' => 'required|min_length[2]|max_length[25]|regex_match[/^[\p{L}\d\s\'\-]+$/u]',
+                    'city_country' => 'required|min_length[2]|max_length[30]|regex_match[/^[\p{L}\d\s\'\-]+$/u]',
                 ];
     
                 if ($this->validate($rules)) {

@@ -15,14 +15,24 @@
 
         function delete(int $id) {
             $city = City::find($id);
-            $keypoints = Keypoint::where('city_id', '=', $city->$id);
-
-            foreach ($keypoints as $keypoint) {
-                $keypoint->city()->detach();
+        
+            if (!$city) {
+                return redirect()->to(base_url() . 'liste_des_villes');
             }
+        
+            $keypoints = Keypoint::where('city_id', '=', $id)->get();
+        
+            foreach ($keypoints as $keypoint) {
 
+                $keypoint->city_id = 0;  
+                $keypoint->save(); 
+            }
+        
             $city->delete();
+        
+            // Rediriger vers la liste des villes avec un message de succès
             return redirect()->to(base_url() . 'liste_des_villes');
         }
+        
     }
     

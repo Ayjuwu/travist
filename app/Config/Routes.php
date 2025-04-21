@@ -93,19 +93,44 @@ $routes->post('/modifier_un_voyage/modify/(:num)', 'VoyageModifierController::mo
 $routes->post("/api/register", "WebServiceController::register");
 $routes->post("/api/login", "WebServiceController::login");
 $routes->get("/api/profile", "WebServiceController::details");
-
-$routes->get('/api/getTravels', 'WebServiceController::getTravels');
 $routes->get('/api/getKeypoints', 'WebServiceController::getKeypoints');
+$routes->get('/api/getCities', 'WebServiceController::getCities');
 $routes->get('/api/getTags', 'WebServiceController::getTags');
 $routes->get('/api/getTagsByKeypoint/(:num)', 'WebServiceController::getTagsByKeypoint/$1');
 $routes->get('/api/getCityByKeypoint/(:num)', 'WebServiceController::getCityByKeypoint/$1');
 $routes->get('/api/getTravelsByUser/(:num)', 'WebServiceController::getTravelsByUser/$1');
 $routes->get('/api/getKeypointById/(:num)', 'WebServiceController::getKeypointById/$1');
-$routes->get('/api/getKeypointsByTag/(:num)', 'WebServiceController::getKeypointsByTag/$1');
-$routes->get('/api/getKeypointsByCountry/(:alpha)', 'WebServiceController::getKeypointsByCountry/$1');
-$routes->get('/api/getKeypointsByCity/(:num)', 'WebServiceController::getKeypointsByCity/$1');
-$routes->get('/api/getNearestKeypointPosition/(:segment)/(:segment)', 'WebServiceController::getNearestKeypointPosition/$1/$2');
+$routes->get('/api/getKeypointsByTravel/(:num)', 'WebServiceController::getKeypointsByTravel/$1');
+$routes->get('/api/getNearestKeypointPosition/(:segment)/(:segment)/(:num)', 'WebServiceController::getNearestKeypointPosition/$1/$2/$3');
+
+/* WebServiceController - CRUD Voyage */
 
 $routes->post('/api/createTravel', 'WebServiceController::createTravel');
 $routes->post('/api/insertAssigned', 'WebServiceController::insertAssigned');
+
+$routes->post('/api/updateTravel/(:num)', 'WebServiceController::updateTravel/$1');
+$routes->post('/api/updateAssigned/(:num)', 'WebServiceController::updateAssigned/$1');
+$routes->delete('api/deleteAssigned/(:num)/(:num)', 'WebServiceController::deleteAssigned/$1/$2');
+
+$routes->delete('api/deleteTravel/(:num)', 'WebServiceController::deleteTravel/$1');
+
+/* WebServiceController - CRUD Tags */
+
+$routes->post('/api/createTag', 'WebServiceController::createTag');
+$routes->post('/api/updateTag/(:num)', 'WebServiceController::updateTag/$1');
+$routes->delete('/api/deleteTag/(:num)', 'WebServiceController::deleteTag/$1');
+
+
+/* WebServiceController - CRUD Ville */
+
+$routes->post('/api/createCity', 'WebServiceController::createCity');
+$routes->post('/api/updateCity/(:num)', 'WebServiceController::updateCity/$1');
+$routes->delete('/api/deleteCity/(:num)', 'WebServiceController::deleteCity/$1');
+
+/* WebServiceController - CRUD Lieu */
+
+$routes->post('/api/createKeypoint', 'WebServiceController::createKeypoint');
+$routes->post('/api/updateKeypoint/(:num)', 'WebServiceController::updateKeypoint/$1');
+$routes->delete('/api/deleteKeypoint/(:num)', 'WebServiceController::deleteKeypoint/$1');
+
 

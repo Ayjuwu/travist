@@ -19,10 +19,11 @@
 
         public function createKeyPoint() {
             $rules = [
-                'key_point_name' => 'required|min_length[3]|max_length[40]|is_unique[keypoints.key_point_name]|regex_match[/^[\p{L}\s]+$/u]',
+                'key_point_name' => 'required|min_length[3]|max_length[40]|is_unique[keypoints.key_point_name]|regex_match[/^[\p{L}\d\s\'\-]+$/u]',
                 'key_point_price' => 'required|decimal',
                 'key_point_start_date' => 'required|min_length[10]|max_length[10]|valid_date',
                 'key_point_end_date' => 'required|min_length[10]|max_length[10]|valid_date',
+                'key_point_cover' => 'uploaded[key_point_cover]|is_image[key_point_cover]|mime_in[key_point_cover,image/jpeg,image/jpg,image/png,image/webp]',
                 'city' => 'required|integer',
                 'key_point_gps_x' => 'required|max_length[50]|is_unique[keypoints.key_point_gps_x]|decimal',
                 'key_point_gps_y' => 'required|max_length[50]|is_unique[keypoints.key_point_gps_y]|decimal',
@@ -40,9 +41,60 @@
         
                 // Gestion de l'image
                 $image = $this->request->getFile('key_point_cover');
-                $imageData = file_get_contents($image->getTempName());
-                $base64Image = base64_encode($imageData);
-                $keypoint->key_point_cover = $base64Image;
+                if ($image->isValid() && !$image->hasMoved()) {
+                    // Récupérer le fichier temporaire
+                    $imagePath = $image->getTempName();
+                    $extension = $image->getExtension();
+
+                    // Vérifier que l'image est de type JPG, JPEG, PNG ou WEBP
+                    if (in_array($extension, ['jpg', 'jpeg', 'png', 'webp'])) {
+                        // Obtenir les dimensions de l'image
+                        list($width, $height) = getimagesize($imagePath);
+
+                        // Choisir une nouvelle largeur et hauteur (par exemple 50% de la taille d'origine)
+                        $newWidth = $width / 2;
+                        $newHeight = $height / 2;
+
+                        // Créer une nouvelle image redimensionnée
+                        $imageResized = imagecreatetruecolor($newWidth, $newHeight);
+
+                        // Créer une image source selon le type
+                        if ($extension == 'jpg' || $extension == 'jpeg') {
+                            $sourceImage = imagecreatefromjpeg($imagePath);
+                        } elseif ($extension == 'png') {
+                            $sourceImage = imagecreatefrompng($imagePath);
+                        } elseif ($extension == 'webp') {
+                            $sourceImage = imagecreatefromwebp($imagePath);
+                        }
+
+                        // Copier et redimensionner l'image dans l'image cible
+                        imagecopyresampled($imageResized, $sourceImage, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+
+                        // Sauvegarder l'image redimensionnée en mémoire
+                        ob_start();
+                        if ($extension == 'jpg' || $extension == 'jpeg') {
+                            imagejpeg($imageResized, null, 75);  // Compression JPG à 75%
+                        } elseif ($extension == 'png') {
+                            imagepng($imageResized, null, 6);    // Compression PNG à 6 (niveau de compression)
+                        } elseif ($extension == 'webp') {
+                            imagewebp($imageResized, null, 75);  // Compression WebP à 75% (comme JPEG)
+                        }
+
+                        // Récupérer les données de l'image redimensionnée en mémoire
+                        $compressedData = ob_get_clean();
+
+                        // Convertir l'image redimensionnée en base64
+                        $base64Image = base64_encode($compressedData);
+
+                        // Sauvegarder l'image en base64 dans la base de données
+                        $keypoint->key_point_cover = $base64Image;
+                        $keypoint->save();
+
+                        // Libérer la mémoire
+                        imagedestroy($imageResized);
+                        imagedestroy($sourceImage);
+                    }
+                }
         
                 // Récupération de l'ID de la ville
                 $keypoint->city_id = $this->request->getVar('city'); 

@@ -1,7 +1,7 @@
 <?= \Config\Services::validation()->listErrors() ?>
         <div id="modal">
                 <form action="<?php echo base_url() . "modifier_une_ville/modify/$current_city->id"; ?>" method="POST" name="villeForm">
-                    <h4 class="title_form"> Modifier un tag </h4>
+                    <h4 class="title_form"> Modifier une ville </h4>
 
                     <?= csrf_field() ?>
                     <span>

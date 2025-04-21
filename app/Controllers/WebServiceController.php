@@ -1,6 +1,7 @@
 <?php
     namespace App\Controllers;
     use CodeIgniter\API\ResponseTrait;
+    use Illuminate\Support\Facades\DB;
 
     use App\Models\UserModel;
     use CodeIgniter\RESTful\ResourceController;
@@ -13,6 +14,7 @@
 
     use App\Models\Travel;
     use App\Models\Keypoint;
+    use App\Models\City;
     use App\Models\Tag;
     use App\Models\User;
 
@@ -25,9 +27,9 @@
             return $this->respond($keypoints);
         }
 
-        public function getTravels() {
-            $travels = Travel::all();
-            return $this->respond($travels);
+        public function getCities() {
+            $cities = City::all();
+            return $this->respond($cities);
         }
 
         public function getTags() {
@@ -66,43 +68,39 @@
             }
         }
 
-        public function getKeypointsByTag(int $tag_id) {
-            $tag = Tag::find($tag_id);
+        public function getKeypointsByTravel(int $id) {
+            $travel = Travel::find($id);
 
-            if(!is_null($tag)) {
-                $keypoints = $tag->keypoints()->get();
+            if ($travel) {
+                $keypoints = $travel->keypoints()
+                    ->with('city')
+                    ->get();
+
                 return $this->respond($keypoints);
             }
         }
 
-        public function getKeypointsByCountry(string $country) {
-            $keypoints = Keypoint::join('cities', 'keypoints.city_id', '=', 'cities.id')
-                ->where('cities.city_country', '=', $country)
-                ->select('keypoints.*') // Pour récupérer uniquement les colonnes de keypoints
-                ->get();
+        public function getNearestKeypointPosition(float $latitude, float $longitude, int $travelId) {
+            // Récupérer les ID des keypoints déjà assignés à ce voyage
+            $assignedKeypointIds = \App\Models\Assigned::where('travel_id', $travelId)
+                ->pluck('keypoint_id')
+                ->toArray();
 
-            return $this->respond($keypoints);
-        }
-
-        public function getKeypointsByCity(int $city_id) {
-            $keypoints = Keypoint::where('city_id', '=', $city_id)->get();
-            return $this->respond($keypoints);
-        }
-
-        public function getNearestKeypointPosition(float $latitude, float $longitude) {
             $keypoint = Keypoint::selectRaw(
-                "*, ((key_point_gps_x - ?) * (key_point_gps_x - ?) + (key_point_gps_y - ?) * (key_point_gps_y - ?)) as distance",
-                [$latitude, $latitude, $longitude, $longitude]
-            )
-            ->orderBy("distance", "asc")
-            ->first();
-
+                    "*, ((key_point_gps_x - ?) * (key_point_gps_x - ?) + (key_point_gps_y - ?) * (key_point_gps_y - ?)) as distance",
+                    [$latitude, $latitude, $longitude, $longitude]
+                )
+                ->where('is_altered_keypoint', 0)
+                ->whereNotIn('id', $assignedKeypointIds) 
+                ->orderBy("distance", "asc")
+                ->first();
+        
             if (!$keypoint) {
                 return $this->failNotFound("Aucun keypoint trouvé");
             }
-            
+        
             return $this->respond($keypoint);
-        }
+        }            
 
         public function register() {	
             $rules = [
@@ -402,8 +400,413 @@
             ];
         
             return $this->respond($response, 200);
-        }        
+        }      
         
+        public function deleteTravel(int $id) {
+            $travel = Travel::find($id);
+            
+            if(!$travel) {
+                return response()->setJSON(['success' => false, 'message' => 'Voyage non trouvé'], 404);
+            }
+            
+            $travel->keypoints()->detach();
+            $travel->delete();
+        
+            return $this->response->setJSON(['success' => true]);
+        }       
+        
+        public function updateTravel(int $id) {
+            $data = $this->request->getJSON(true);
+        
+            if (!isset($data['travel_id'], 
+                       $data['travel_name'], 
+                       $data['people_number'], 
+                       $data['user_id'], 
+                       $data['travel_start_date'], 
+                       $data['travel_end_date'], 
+                       $data['individual_price'], 
+                       $data['total_price'])) {
+                
+                return $this->failValidationError('Informations manquantes pour la mise à jour du voyage');
+            }
+        
+            try {
+                $travel = Travel::find($id);
+                if (!$travel) {
+                    return $this->failNotFound('Voyage non trouvé');
+                }
+        
+                // Mise à jour des champs
+                $travel->update([
+                    'travel_name'        => $data['travel_name'],
+                    'people_number'      => $data['people_number'],
+                    'user_id'            => $data['user_id'],
+                    'travel_start_date'  => $data['travel_start_date'],
+                    'travel_end_date'    => $data['travel_end_date'],
+                    'individual_price'   => $data['individual_price'],
+                    'total_price'        => $data['total_price']
+                ]);
+        
+                // Mettre à jour les keypoints si fournis
+                if (isset($data['keypoints']) && is_array($data['keypoints'])) {
+                    // Détacher les anciens
+                    $travel->keypoints()->detach();
+        
+                    // Réattacher les nouveaux
+                    foreach ($data['keypoints'] as $kp) {
+                        if (isset($kp['keypoint_id'], $kp['start_date'], $kp['end_date'])) {
+                            $travel->keypoints()->attach($kp['keypoint_id'], [
+                                'start_date' => $kp['start_date'],
+                                'end_date'   => $kp['end_date']
+                            ]);
+                        }
+                    }
+                }
+        
+                return $this->respond([
+                    'success' => true,
+                    'status'  => 200,
+                    'message' => 'Voyage mis à jour avec succès',
+                    'data'    => $travel
+                ]);
+        
+            } catch (\Exception $ex) {
+                return $this->failServerError('Erreur lors de la mise à jour : ' . $ex->getMessage());
+            }
+        }
+
+        public function updateAssigned(int $id) {
+            $data = $this->request->getJSON(true);
+        
+            if (!isset($data['travel_id'], $data['keypoints']) || !is_array($data['keypoints'])) {
+                return $this->failValidationError('Informations manquantes pour la mise à jour des keypoints assignés');
+            }
+        
+            // Rechercher le voyage
+            $travel = Travel::find($id);
+            if (!$travel) {
+                return $this->failNotFound('Voyage non trouvé');
+            }
+        
+            try {
+                // Supprimer toutes les assignations actuelles
+                $travel->keypoints()->detach();
+        
+                // Réattacher les nouveaux keypoints
+                foreach ($data['keypoints'] as $kp) {
+                    if (isset($kp['keypoint_id'], $kp['start_date'], $kp['end_date'])) {
+                        $travel->keypoints()->attach($kp['keypoint_id'], [
+                            'start_date' => $kp['start_date'],
+                            'end_date'   => $kp['end_date']
+                        ]);
+                    } else {
+                        return $this->failValidationError('Données incomplètes pour un keypoint');
+                    }
+                }
+        
+                return $this->respond([
+                    'success' => true,
+                    'status'  => 200,
+                    'message' => 'Keypoints mis à jour avec succès',
+                    'data'    => [
+                        'travel_id' => $travel->id,
+                        'assigned_keypoints' => $data['keypoints']
+                    ]
+                ]);
+            } catch (\Exception $ex) {
+                return $this->failServerError('Erreur lors de la mise à jour des keypoints : ' . $ex->getMessage());
+            }
+        }   
+        
+        public function deleteAssigned(int $travel_id, int $keypoint_id) {
+            $travel = Travel::find($travel_id);
+            if (! $travel) {
+                return $this->failNotFound('Voyage non trouvé');
+            }
+
+            $exists = $travel->keypoints()
+                            ->where('keypoint_id', $keypoint_id)
+                            ->exists();
+            if (! $exists) {
+                return $this->failNotFound('Aucun keypoint assigné trouvé pour cet ID');
+            }
+
+            try {
+                $travel->keypoints()->detach($keypoint_id);
+            } catch (\Exception $e) {
+                return $this->failServerError('Erreur lors de la suppression du keypoint assigné : ' . $e->getMessage());
+            }
+
+            $assigned = $travel->keypoints()
+                            ->withPivot('start_date', 'end_date')
+                            ->get();
+
+            if ($assigned->isEmpty()) {
+
+                $travel->update([
+                    'individual_price'   => 0,
+                    'total_price'        => 0,
+                    'travel_start_date'  => null,
+                    'travel_end_date'    => null,
+                ]);
+            } else {
+                $individualPrice = $assigned->sum('key_point_price');
+                $totalPrice      = $individualPrice * $travel->people_number;
+
+                $startDates = $assigned->pluck('pivot.start_date')->toArray();
+                $endDates   = $assigned->pluck('pivot.end_date')->toArray();
+
+                // trouver la date min et max
+                $earliest = min($startDates);
+                $latest   = max($endDates);
+
+                $travel->update([
+                    'individual_price'   => $individualPrice,
+                    'total_price'        => $totalPrice,
+                    'travel_start_date'  => $earliest,
+                    'travel_end_date'    => $latest,
+                ]);
+            }
+
+            return $this->respondDeleted([
+                'success'    => true,
+                'travel'     => $travel->fresh(), // recharge les données
+            ]);
+        }
+
+        // Créer un tag
+        public function createTag() {
+            $data = $this->request->getJSON(true);
+            try {
+                $tag = Tag::create([
+                    'tag_name' => $data['tag_name']
+                ]);
+                return $this->respondCreated([
+                    'success' => true,
+                    'data' => $tag
+                ]);
+            } catch (\Exception $e) {
+                return $this->failServerError('Erreur création tag : ' . $e->getMessage());
+            }
+        }
+
+        // Mettre à jour un tag existant
+        public function updateTag(int $id) {
+            $data = $this->request->getJSON(true);
+            $tag = Tag::find($id);
+            if (!$tag) {
+                return $this->failNotFound('Tag non trouvé');
+            }
+
+            try {
+                $tag->update(['tag_name' => $data['tag_name']]);
+                return $this->respond([
+                    'success' => true,
+                    'data' => $tag
+                ]);
+            } catch (\Exception $e) {
+                return $this->failServerError('Erreur mise à jour tag : ' . $e->getMessage());
+            }
+        }
+
+        // Supprimer un tag
+        public function deleteTag(int $id) {
+            $tag = Tag::find($id);
+            if (!$tag) {
+                return $this->failNotFound('Tag non trouvé');
+            }
+
+            try {
+                $tag->keypoints()->detach();
+                $tag->delete();
+                return $this->respondDeleted(['success' => true]);
+            } catch (\Exception $e) {
+                return $this->failServerError('Erreur suppression tag : ' . $e->getMessage());
+            }
+        }
+
+
+        // Créer une ville
+        public function createCity() {
+            $data = $this->request->getJSON(true);
+            try {
+                $city = City::create([
+                    'city_name' => $data['city_name'],
+                    'city_country' => $data['city_country']
+                ]);
+                return $this->respondCreated([
+                    'success' => true,
+                    'data' => $city
+                ]);
+            } catch (\Exception $e) {
+                return $this->failServerError('Erreur création ville : ' . $e->getMessage());
+            }
+        }
+
+        // Mettre à jour une ville existante
+        public function updateCity(int $id) {
+            $data = $this->request->getJSON(true);
+            $keypoints = Keypoint::where('city_id', '=', $id);
+
+            $city = City::find($id);
+            if (!$city) {
+                return $this->failNotFound('Ville non trouvée');
+            }
+
+            try {
+                foreach ($keypoints as $keypoint) {
+                    $keypoint->update(['city_id' => $data['city_id']]);
+                }
+
+                $city->update(['city_name' => $data['city_name']]);
+                $city->update(['city_country' => $data['city_country']]);
+                return $this->respond([
+                    'success' => true,
+                    'data' => $city
+                ]);
+            } catch (\Exception $e) {
+                return $this->failServerError('Erreur mise à jour ville : ' . $e->getMessage());
+            }
+        }
+
+        // Supprimer une ville
+        public function deleteCity(int $id) {
+            $city = City::find($id);
+            $keypoints = Keypoint::where('city_id', '=', $id)->get();
+
+            if (!$city) {
+                return $this->failNotFound('Ville non trouvée');
+            }
+
+            try {
+                foreach ($keypoints as $keypoint) {
+                   $keypoint->city_id = 0;
+                   $keypoint->save();
+                }
+
+                // Puis supprimer la ville
+                $city->delete();
+
+                return $this->respondDeleted(['success' => true]);
+            } catch (\Exception $e) {
+                return $this->failServerError('Erreur suppression ville : ' . $e->getMessage());
+            }
+        }
+
+        public function createKeypoint() {
+            $data = $this->request->getJSON(true);
+
+            try {
+                // Création du keypoint
+                $keypoint = Keypoint::create([
+                    'key_point_name' => $data['key_point_name'],
+                    'key_point_price' => $data['key_point_price'],
+                    'key_point_start_date' => $data['key_point_start_date'],
+                    'key_point_end_date' => $data['key_point_end_date'],
+                    'key_point_cover' => $data['key_point_cover'],
+                    'key_point_gps_x' => $data['key_point_gps_x'],
+                    'key_point_gps_y' => $data['key_point_gps_y'],
+                    'is_altered_keypoint' => $data['is_altered_keypoint'],
+                    'city_id' => $data['city_id']
+                ]);
+
+                // Si on reçoit un tableau "tags", on rattache en pivot
+                if (!empty($data['tags']) && is_array($data['tags'])) {
+                    foreach ($data['tags'] as $tagId) {
+                        if (Tag::find($tagId)) {
+                            $keypoint->tags()->attach($tagId);
+                        }
+                    }
+                }
+
+                return $this->respondCreated([
+                    'success' => true,
+                    'data'    => $keypoint
+                ]);
+
+            } catch (\Exception $ex) {
+                return $this->failServerError('Erreur création keypoint : ' . $ex->getMessage());
+            }
+        }
+
+        public function updateKeypoint(int $id) {
+            $data = $this->request->getJSON(true);
+
+            $required = [
+                'key_point_name',
+                'key_point_price',
+                'key_point_start_date',
+                'key_point_end_date',
+                'key_point_gps_x',
+                'key_point_gps_y',
+                'is_altered_keypoint',
+                'city_id',
+            ];
+            foreach ($required as $f) {
+                if (! array_key_exists($f, $data)) {
+                    return $this->failValidationError("Champ manquant : {$f}");
+                }
+            }
+
+            $kp = Keypoint::find($id);
+            if (! $kp) {
+                return $this->failNotFound('Keypoint non trouvé');
+            }
+
+            try {
+                $upd = [
+                    'key_point_name'       => $data['key_point_name'],
+                    'key_point_price'      => $data['key_point_price'],
+                    'key_point_start_date' => $data['key_point_start_date'],
+                    'key_point_end_date'   => $data['key_point_end_date'],
+                    'key_point_gps_x'      => $data['key_point_gps_x'],
+                    'key_point_gps_y'      => $data['key_point_gps_y'],
+                    'is_altered_keypoint'  => $data['is_altered_keypoint'],
+                    'city_id'              => $data['city_id'],
+                ];
+
+                if (! empty($data['key_point_cover'])) {
+                    $upd['key_point_cover'] = $data['key_point_cover'];
+                }
+                $kp->update($upd);
+
+                // 4) Synchronisation des tags pivot
+                if (isset($data['tags']) && is_array($data['tags'])) {
+                    $kp->tags()->detach();
+                    foreach ($data['tags'] as $tagId) {
+                        if (Tag::find($tagId)) {
+                            $kp->tags()->attach($tagId);
+                        }
+                    }
+                }
+
+                return $this->respond([
+                    'success' => true,
+                    'data'    => $kp
+                ]);
+            } catch (\Exception $ex) {
+                return $this->failServerError('Erreur mise à jour keypoint : ' . $ex->getMessage());
+            }
+        }
+
+        // Supprimer un tag
+        public function deleteKeypoint(int $id) {
+            $keypoint = Keypoint::find($id);
+
+            try {
+                if ($keypoint) {
+                    $keypoint->travels()->detach();
+                    $keypoint->tags()->detach();
+                    $keypoint->delete();
+                }
+
+                return $this->respondDeleted(['success' => true]);
+            } catch (\Exception $e) {
+                return $this->failServerError('Erreur suppression ville : ' . $e->getMessage());
+            }
+        }
+
+
         public function failValidationError($message = "Validation error") {
             return $this->response->setStatusCode(400)->setJSON([
                 'title' => 'Error',

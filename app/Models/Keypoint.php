@@ -7,6 +7,18 @@
         protected $primaryKey = 'id';
         public $timestamps = false;
 
+        protected $fillable = [
+            'key_point_name',
+            'key_point_price',
+            'key_point_start_date',
+            'key_point_end_date',
+            'key_point_cover',
+            'key_point_gps_x',
+            'key_point_gps_y',
+            'is_altered_keypoint',
+            'city_id'
+        ];        
+
         public function travels() {
             return $this->belongsToMany(Travel::class, 'assigned')
                         ->withPivot('start_date', 'end_date');

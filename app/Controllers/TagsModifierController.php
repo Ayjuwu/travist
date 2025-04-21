@@ -24,11 +24,25 @@
 
                 $tag = Tag::find($id);
                 $rule = [
-                    'tag_name' => 'required|min_length[2]|max_length[20]|is_unique[tags.tag_name]|alpha',
+                    'tag_name' => 'required|min_length[2]|max_length[20]|is_unique[tags.tag_name]|regex_match[/^#?[\p{L}\p{N}]+$/u]',
                 ];
     
                 if ($this->validate($rule)) {
-                    $tag->tag_name = '#' . $this->request->getVar('tag_name');
+                    $rawName = $this->request->getVar('tag_name');
+                    $tagNameClean = ltrim($rawName, '#'); // enlève le # s’il y est
+
+                    // Vérifie si le tag existe en base avec ou sans #
+                    $tagExists = \App\Models\Tag::where('tag_name', $tagNameClean)
+                        ->orWhere('tag_name', '#' . $tagNameClean)
+                        ->first();
+
+                    if ($tagExists) {
+                        return redirect()->to(base_url() . 'modifier_un_tag/' . $id)->with('error', 'Ce tag existe déjà avec ou sans #.');
+                    }
+
+                    $tagName = (str_starts_with($rawName, '#')) ? $rawName : '#' . $rawName;
+    
+                    $tag->tag_name = $tagName;
                     $tag->save();
     
                     return redirect()->to(base_url() . 'liste_des_tags');

@@ -30,7 +30,9 @@
                         <select id='city' name='city'>
                             <option selected disabled hidden> Choisissez une ville : </option>
                             <?php foreach ($cities as $city) :
-                                echo "<option value='$city->id'>" . $city->city_name . "</option>";
+                                if($city->id !== 0) {
+                                    echo "<option value='$city->id'>" . esc($city->city_name) . "</option>";
+                                }
                             endforeach; ?>
                         </select>
                     </span>
@@ -41,12 +43,12 @@
                     </span>
 
                     <span>
-                        <label for="key_point_gps_x"> Coordonnées X : </label>
+                        <label for="key_point_gps_x"> Coordonnée X : </label>
                         <input type="text" name="key_point_gps_x" id="key_point_gps_x" value="<?= set_value('key_point_gps_x') ?>">
                     </span>
 
                     <span>
-                        <label for="key_point_gps_y"> Coordonnées Y : </label>
+                        <label for="key_point_gps_y"> Coordonnée Y : </label>
                         <input type="text" name="key_point_gps_y" id="key_point_gps_y" value="<?= set_value('key_point_gps_y') ?>">
                     </span>
 
@@ -55,14 +57,16 @@
                         <select id='tags[]' name='tags[]'>
                             <option selected disabled hidden> Choisissez un tag : </option>
                             <?php foreach ($tags as $tag) :
-                                echo "<option value='$tag->id'>" . esc($tag->tag_name) . "</option>";
+                                if ($tag->id !== 0) {
+                                    echo "<option value='$tag->id'>" . esc($tag->tag_name) . "</option>";
+                                }
                             endforeach; ?>
                         </select>
                         <button type="button" id="addTagBtn"> + </button>
                     </span>
 
                     <span>
-                        <label for="is_altered_keypoint"> Le lieux rencontre actuellement un problème pour la visite ? </label>
+                        <label for="is_altered_keypoint"> Le lieu rencontre actuellement un problème pour la visite ? </label>
                         <input type="checkbox" name="is_altered_keypoint" id="is_altered_keypoint" value="1">
                     </span>
 
@@ -93,7 +97,9 @@
                     <select name='tags[]'>
                         <option selected disabled hidden> Choisissez un tag : </option>
                         <?php foreach ($tags as $tag) :
-                            echo "<option value='$tag->id'>" . esc($tag->tag_name) . "</option>";
+                            if ($tag->id !== 0) {
+                                echo "<option value='$tag->id'>" . esc($tag->tag_name) . "</option>";
+                            }
                         endforeach; ?>
                     </select>
                 `;

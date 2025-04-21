@@ -6,21 +6,23 @@
                     if (count($cities) !== 0) {
                         foreach ($cities as $city): ?>
                             <?php 
-                                echo "<span class='card'> 
-                                        <span class='kp_btns_box'> 
-                                            <a href='" . base_url() . "modifier_une_ville/$city->id' class='modify'> 
-                                                <img src='" . base_url() . "pictures/edit-pen.svg'> 
-                                            </a>
-        
-                                            <a href='" . base_url() . "liste_des_villes/delete/$city->id' class='delete'> 
-                                                <img src='" . base_url() . "pictures/trash-bin-delete.svg'> 
-                                            </a>
-                                        </span>
-        
-                                        <p class='item'> <b> ID </b> : <i>" . "$city->id" . "</i> </p> 
-                                        <p class='item'> <b> Nom </b> : <i>" . esc($city->city_name) . "</i> </p>  
-                                        <p class='item'> <b> Pays </b> : <i>" . esc($city->city_country) . "</i> </p>
-                                    </span>  \n";
+                                if ($city->id !== 0) {
+                                    echo "<span class='card'> 
+                                    <span class='kp_btns_box'> 
+                                        <a href='" . base_url() . "modifier_une_ville/$city->id' class='modify'> 
+                                            <img src='" . base_url() . "pictures/edit-pen.svg'> 
+                                        </a>
+    
+                                        <a href='" . base_url() . "liste_des_villes/delete/$city->id' class='delete'> 
+                                            <img src='" . base_url() . "pictures/trash-bin-delete.svg'> 
+                                        </a>
+                                    </span>
+    
+                                    <p class='item'> <b> ID </b> : <i>" . "$city->id" . "</i> </p> 
+                                    <p class='item'> <b> Nom </b> : <i>" . esc($city->city_name) . "</i> </p>  
+                                    <p class='item'> <b> Pays </b> : <i>" . esc($city->city_country) . "</i> </p>
+                                </span>  \n";
+                                } 
                             ?>
                         <?php endforeach; 
                         
