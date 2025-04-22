@@ -3,7 +3,6 @@
     use CodeIgniter\API\ResponseTrait;
     use Illuminate\Support\Facades\DB;
 
-    use App\Models\UserModel;
     use CodeIgniter\RESTful\ResourceController;
     use Exception;
     use \Firebase\JWT\JWT;

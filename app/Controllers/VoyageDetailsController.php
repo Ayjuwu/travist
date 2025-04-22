@@ -1,5 +1,7 @@
 <?php
     namespace App\Controllers;
+    ini_set('memory_limit', '256M');
+    
     use App\Models\Travel;
     use App\Models\Keypoint;
     
