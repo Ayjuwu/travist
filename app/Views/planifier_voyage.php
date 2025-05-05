@@ -113,170 +113,191 @@
 
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    // Initialiser la liste des lieux déjà liés au voyage depuis $current_keypoints.
-    // Vérifier que la variable existe, sinon utiliser un tableau vide.
-    let keypoints = [];
-    
-    // Pour le carrousel, tous les keypoints disponibles
-    let allKeypoints = <?php 
-        echo json_encode($keypoints->map(function($kp) {
+    // Attente du chargement complet du DOM avant d’exécuter le script
+    document.addEventListener('DOMContentLoaded', () => {
+        
+        // Liste des lieux sélectionnés par l'utilisateur
+        let keypoints = [];
+
+        // Liste de tous les lieux disponibles côté serveur, convertis en JSON côté client
+        let allKeypoints = <?= json_encode($keypoints->map(function($kp) {
             $city = $kp->city()->first();
             return [
-                'id'        => $kp->id,
-                'name'      => esc($kp->key_point_name),
-                'price'     => esc($kp->key_point_price),
-                'startDate' => esc($kp->key_point_start_date),
-                'endDate'   => esc($kp->key_point_end_date),
-                'key_point_gps_x' => esc($kp->key_point_gps_x),
-                'key_point_gps_y' => esc($kp->key_point_gps_y),
-                'city'      => esc($city) ? esc($city->city_name) : '',
-                'tag'       => esc(implode(', ', $kp->tags()->pluck('tag_name')->toArray()))
+                'id'            => $kp->id,
+                'name'          => esc($kp->key_point_name),           
+                'price'         => esc($kp->key_point_price),         
+                'startDate'     => esc($kp->key_point_start_date),     
+                'endDate'       => esc($kp->key_point_end_date),       
+                'city'          => $city ? esc($city->city_name) : '', 
+                'tag'           => esc(implode(', ', $kp->tags()->pluck('tag_name')->toArray())) 
             ];
-        })->toArray());
-    ?>;
+        })->toArray()); ?>;
 
-    
-    let currentKeypoint = null;
-    let numberOfTravelers = parseInt(document.getElementById('people_number').value, 10) || 1;
-    
-    function updatePrices() {
-        const individualPrice = keypoints.reduce((total, kp) => total + parseFloat(kp.price || 0), 0);
-        const totalPrice = individualPrice * numberOfTravelers;
-        document.getElementById('individualPrice').innerText = `Prix par personne : ${individualPrice.toFixed(2)}€`;
-        document.getElementById('totalPrice').innerText = `Prix total pour tous les voyageurs : ${totalPrice.toFixed(2)}€`;
-    }
-    
-    document.getElementById('people_number').addEventListener('input', function() {
-        const value = parseInt(this.value, 10);
-        numberOfTravelers = (!isNaN(value) && value > 0) ? value : 1;
-        updatePrices();
-    });
-    
-    function updateSelectedList() {
-        const list = document.getElementById('selectedList');
-        list.innerHTML = '';
-        // Afficher uniquement si le tableau keypoints n'est pas vide
-        if (keypoints.length === 0) {
-            list.style.display = 'none';
-            return;
+        // Lieux actuellement sélectionné dans le carrousel (pour l'ajout)
+        let currentKeypoint = null;
+
+        // Nombre de voyageurs, récupéré dans le champ et converti en entier (par défaut 1)
+        let numberOfTravelers = parseInt(document.getElementById('people_number').value, 10) || 1;
+
+        // On met à jour l'affichage du prix total et du prix individuel
+        function updatePrices() {
+            const individualPrice = keypoints.reduce((sum, kp) => sum + parseFloat(kp.price || 0), 0);
+            document.getElementById('individualPrice').innerText =
+                `Prix par personne : ${individualPrice.toFixed(2)}€`;
+            document.getElementById('totalPrice').innerText =
+                `Prix total pour tous les voyageurs : ${(individualPrice * numberOfTravelers).toFixed(2)}€`;
         }
 
-        keypoints.forEach(kp => {
-            if (kp) {
+        // Écoute les changements dans le champ du nombre de voyageurs pour update les prix
+        document.getElementById('people_number').addEventListener('input', e => {
+            const v = parseInt(e.target.value, 10);
+            numberOfTravelers = (v > 0 ? v : 1);
+            updatePrices();
+        });
+
+        // Met à jour la liste des lieux sélectionnés dans l’interface
+        function updateSelectedList() {
+            const list = document.getElementById('selectedList');
+            list.innerHTML = ''; // Réinitialise la liste
+
+            // Si aucun lieu n’est sélectionné, on cache la liste et le carrousel
+            if (!keypoints.length) {
+                list.style.display = 'none';
+                updateCarrouselVisibility();
+                return;
+            }
+
+            // Pour chaque lieu sélectionné
+            keypoints.forEach(kp => {
                 const item = document.createElement('div');
                 item.className = 'selected-item';
-                const startVal = kp.preFilled ? kp.startDate : "";
-                const endVal = kp.preFilled ? kp.endDate : "";
+
+                // Construction de l’item du lieu
                 item.innerHTML = `
                     <span>${kp.name}</span>
-                    <br>
                     <div class="input-item">
-                        <label for="start_date${kp.id}">Arrivée :</label>
-                        <input type="text" id="start_date${kp.id}" name="start_date[${kp.id}]"
-                            placeholder="Début de disponibilité : ${kp.startDate}"
-                            class="datepicker full-width"
-                            data-start="${kp.startDate}" value="${startVal}" required>
-                    </div>
-                    <br>
-                    <div class="input-item">
-                        <label for="end_date${kp.id}">Départ :</label>
-                        <input type="text" id="end_date${kp.id}" name="end_date[${kp.id}]"
-                            placeholder="Fin de disponibilité : ${kp.endDate}"
-                            class="datepicker full-width"
-                            data-end="${kp.endDate}" value="${endVal}" required>
-                    </div>
+                    <input
+                        type="text"
+                        id="dr${kp.id}"
+                        class="datepicker-range full-width"
+                        placeholder="${kp.startDate} ⇆ ${kp.endDate}"
+                        readonly
+                        required>
+                    <input type="hidden" name="start_date[${kp.id}]" id="hs${kp.id}">
+                    <input type="hidden" name="end_date[${kp.id}]"   id="he${kp.id}">
                     <input type="hidden" name="keypoints[]" value="${kp.id}">
+                    </div>
                     <button onclick="removeItem(${kp.id}, event)" class="remove-btn">×</button>
                 `;
-                list.appendChild(item);
-            }
-        });
-        list.style.display = keypoints.length ? 'block' : 'none';
-        updatePrices();
-        updateCarrouselVisibility();
-    }
-    
-    window.removeItem = (id, event) => {
-        event.preventDefault();
-        keypoints = keypoints.filter(kp => kp.id !== id);
-        updateSelectedList();
-        updateMap();
-    };
 
-    function updateCarrouselVisibility() {
-        document.querySelectorAll('.carrousel-item').forEach(item => {
-            const kpId = parseInt(item.dataset.id);
-            const isSelected = keypoints.some(kp => kp.id === kpId);
-            item.style.display = isSelected ? 'none' : 'block';
-        });
-    }
-    
-    // Gestion du carrousel
-    document.querySelectorAll('.carrousel-item').forEach(item => {
-        item.addEventListener('click', function(e) {
-            e.preventDefault();
-            currentKeypoint = {
-                id: parseInt(this.dataset.id),
-                name: this.dataset.name,
-                price: parseFloat(this.dataset.price || 0),
-                startDate: this.getAttribute('data-startdate'),
-                endDate: this.getAttribute('data-enddate'),
-                city: this.dataset.city,
-                x: parseFloat(this.dataset.x),
-                y: parseFloat(this.dataset.y),
-                tag: this.dataset.tag || '',
-                preFilled: false
-            };
-            document.getElementById('kpName').innerText = currentKeypoint.name;
-            document.getElementById('kpCity').innerText = 'Ville : ' + currentKeypoint.city;
-            document.getElementById('kpStartDate').innerText = 'Date de début de disponibilité : ' + currentKeypoint.startDate;
-            document.getElementById('kpEndDate').innerText = 'Date de fin de disponibilité : ' + currentKeypoint.endDate;
-            document.getElementById('kpPrice').innerText = 'Prix par personne (TTC) : ' + currentKeypoint.price + '€';
-            document.getElementById('kpTags').innerText = 'Tags : ' + (currentKeypoint.tag || '#NaN');
-            document.getElementById('modalImage').src = this.querySelector('img').src;
-            document.getElementById('imageModal').style.display = 'block';
-        });
-    });
-    
-    document.getElementById('addToList').addEventListener('click', (e) => {
-        e.preventDefault();
-        if (currentKeypoint && !keypoints.some(kp => kp.id === currentKeypoint.id)) {
-            currentKeypoint.preFilled = false;
-            keypoints.push({ ...currentKeypoint });
-            updateSelectedList();
+                list.appendChild(item);
+
+                // Initialise le Flatpickr
+                flatpickr(item.querySelector('.datepicker-range'), {
+                    mode: "range", // Mode plage (début-fin)
+                    dateFormat: "Y-m-d", // Format des dates affichées
+                    minDate: kp.startDate, // Date minimum sélectionnable
+                    maxDate: kp.endDate,   // Date maximum sélectionnable
+                    defaultDate: [kp.startDate, kp.endDate], // Dates par défaut affichées
+
+                    // Quand le flatpickr est prêt (affiché) "_" en paramètre car valeurs pas utilisées 
+                    onReady: function(_, __, inst) {
+                        // On remplit les champs cachés avec les dates par défaut
+                        document.getElementById(`hs${kp.id}`).value = kp.startDate;
+                        document.getElementById(`he${kp.id}`).value = kp.endDate;
+
+                        // On met à jour l'affichage du champ visible
+                        inst.input.value = `${kp.startDate} ⇆ ${kp.endDate}`;
+                    },
+
+                    // Quand l'utilisateur change les dates sélectionnées
+                    onChange: function(selectedDates, _dateStr, inst) {
+                        if (selectedDates.length === 2) {
+                            // Formate et sauvegarde les nouvelles dates sélectionnées
+                            const s = inst.formatDate(selectedDates[0], "Y-m-d");
+                            const e = inst.formatDate(selectedDates[1], "Y-m-d");
+                            document.getElementById(`hs${kp.id}`).value = s;
+                            document.getElementById(`he${kp.id}`).value = e;
+                            inst.input.value = `${s} ⇆ ${e}`;
+                        }
+                    }
+                });
+            });
+
+            list.style.display = 'block'; // Affiche la liste
+            updatePrices(); // On met à jour les prix
+            updateCarrouselVisibility(); // On cache les éléments du carrousel déjà sélectionnés
         }
-        closeModal();
-    });
-    
-    // Initialisation des datepickers
-    const datepickers = document.querySelectorAll('.datepicker');
-    datepickers.forEach(input => {
-        const startDate = input.getAttribute('data-start');
-        const endDate = input.getAttribute('data-end');
-        flatpickr(input, {
-            minDate: startDate,
-            maxDate: endDate,
-            dateFormat: "Y-m-d"
+
+        // Supprime un keypoint de la sélection
+        window.removeItem = (id, event) => {
+            event.preventDefault();
+            keypoints = keypoints.filter(kp => kp.id !== id); // Retire le keypoint
+            updateSelectedList(); // Rafraîchit la liste affichée
+            updateMap(); // Met à jour la carte (si présente)
+        };
+
+        // Affiche/masque les éléments du carrousel en fonction des keypoints sélectionnés
+        function updateCarrouselVisibility() {
+            document.querySelectorAll('.carrousel-item').forEach(item => {
+                const kpId = parseInt(item.dataset.id, 10);
+                const isSelected = keypoints.some(kp => kp.id === kpId);
+                item.style.display = isSelected ? 'none' : 'inline-block';
+            });
+        }
+
+        // Ajoute un écouteur à chaque élément du carrousel
+        document.querySelectorAll('.carrousel-item').forEach(item => {
+            item.addEventListener('click', e => {
+                e.preventDefault();
+                // Stocke les infos du keypoint cliqué dans currentKeypoint
+                currentKeypoint = {
+                    id: parseInt(item.dataset.id, 10),
+                    name: item.dataset.name,
+                    price: parseFloat(item.dataset.price || 0),
+                    startDate: item.dataset.startdate,
+                    endDate: item.dataset.enddate,
+                    city: item.dataset.city,
+                    tag: item.dataset.tag,
+                    preFilled: false
+                };
+
+                // Affiche les infos du keypoint dans la modale
+                document.getElementById('kpName').innerText = currentKeypoint.name;
+                document.getElementById('kpCity').innerText = 'Ville : ' + currentKeypoint.city;
+                document.getElementById('kpStartDate').innerText = 'Début dispo : ' + currentKeypoint.startDate;
+                document.getElementById('kpEndDate').innerText = 'Fin dispo : ' + currentKeypoint.endDate;
+                document.getElementById('kpPrice').innerText = 'Prix : ' + currentKeypoint.price + '€';
+                document.getElementById('kpTags').innerText = 'Tags : ' + (currentKeypoint.tag || '');
+                document.getElementById('modalImage').src = item.querySelector('img').src;
+                document.getElementById('imageModal').style.display = 'block';
+            });
         });
+
+        // Ajoute un keypoint à la liste sélectionnée depuis la modale
+        document.getElementById('addToList').addEventListener('click', e => {
+            e.preventDefault();
+            // Ajoute seulement si ce keypoint n’est pas déjà sélectionné
+            if (currentKeypoint && !keypoints.some(kp => kp.id === currentKeypoint.id)) {
+                keypoints.push({ ...currentKeypoint }); // Clone et ajoute
+                updateSelectedList(); // Met à jour la liste affichée
+            }
+            // Ferme la modale
+            document.getElementById('imageModal').style.display = 'none';
+        });
+
+        // Gestion de la fermeture de la modale
+        const closeModal = () => document.getElementById('imageModal').style.display = 'none';
+
+        document.querySelector('.close-modal').addEventListener('click', closeModal);
+        document.addEventListener('click', e => {
+            if (e.target === document.getElementById('imageModal')) closeModal();
+        });
+
+        // Initialisation de l'affichage au chargement de la page
+        updateSelectedList();
+        updatePrices();
     });
-    
-    const closeModal = () => document.getElementById('imageModal').style.display = 'none';
-    document.querySelector('.close-modal').addEventListener('click', closeModal);
-    document.addEventListener('click', e => {
-        if (e.target === document.getElementById('imageModal')) closeModal();
-    });
-    
-    function formatDate(dateString) {
-        const date = new Date(dateString);
-        if (isNaN(date)) return '';
-        return date.toISOString().split('T')[0];
-    }
-    
-    // Initialisation finale
-    updateSelectedList();
-    updatePrices();
-});
 </script>
 <script src="<?=base_url('assets/carrousel.js')?>"></script>
 
