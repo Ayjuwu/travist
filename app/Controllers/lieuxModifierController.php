@@ -8,7 +8,7 @@
         public function index(int $id) {
             helper(['form']);
 
-            $data['title'] = "Modifier un point clé - Travist";
+            $data['title'] = "Modifier un lieu - Travist";
             $data['current_keypoint'] = Keypoint::find($id);
             $data['cities'] = City::all();
             $data['tags'] = Tag::all();
@@ -79,11 +79,11 @@
                             // Sauvegarder l'image redimensionnée en mémoire
                             ob_start();
                             if ($extension == 'jpg' || $extension == 'jpeg') {
-                                imagejpeg($imageResized, null, 75);  // Compression JPG à 75%
+                                imagejpeg($imageResized, null, 50);  // Compression JPG à 75%
                             } elseif ($extension == 'png') {
                                 imagepng($imageResized, null, 6);    // Compression PNG à 6 (niveau de compression)
                             } elseif ($extension == 'webp') {
-                                imagewebp($imageResized, null, 75);  // Compression WebP à 75% (comme JPEG)
+                                imagewebp($imageResized, null, 50);  // Compression WebP à 75% (comme JPEG)
                             }
 
                             // Récupérer les données de l'image redimensionnée en mémoire

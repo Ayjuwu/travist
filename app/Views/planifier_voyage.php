@@ -1,115 +1,117 @@
-<?= \Config\Services::validation()->listErrors() ?>
+        <?= \Config\Services::validation()->listErrors() ?>
 
-<?php if (isset($errors) && !empty($errors)): ?>
-    <div class="alert alert-danger">
-        <ul>
-            <?php foreach ($errors as $error): ?>
-                <li><?= esc($error) ?></li>
-            <?php endforeach; ?>
-        </ul>
-    </div>
-<?php endif; ?>
-
-<div id="modal">
-    <form action="<?php echo base_url() . 'createTravel'; ?>" method="POST" name="travelForm">
-        <h4 class="title_form">Planifier un nouveau voyage</h4>
-        <?= csrf_field() ?>
-
-        <!-- Affichage des prix -->
-        <div class="price-summary">
-            <p id="individualPrice" class="price"> Prix par personne : 0€ </p>
-            <p id="totalPrice" class="price"> Prix total pour tous les voyageurs : 0€ </p>
-        </div>
-        
-        <span>
-            <label for="travel_name">Nom du voyage :</label>
-            <input type="text" name="travel_name" id="travel_name" value="<?= set_value('travel_name') ?>">
-        </span>
-            
-        <span>
-            <label for="people_number">Nombre de voyageurs :</label>
-            <input type="text" name="people_number" id="people_number" value="<?= set_value('people_number') ?>">
-            <input type="hidden" name="userID" id="userID" value="<?= set_value('userID', $userID) ?>">
-        </span>
-
-        <!-- Modale de sélection -->
-        <div id="imageModal" class="modal" style="display: none;">
-            <div class="modal-content">
-                <span class="close-modal">&times;</span>
-                <p id="kpName" class="data"></p>
-                <br>
-                <img id="modalImage" class="modal-image" alt="Image du lieu">
-                <br>
-                <span class="datas-box">
-                    <p id="kpCity" class="data"></p>
-                    <p id="kpStartDate" class="data"></p>
-                    <p id="kpEndDate" class="data"></p>
-                    <p id="kpPrice" class="data"></p>
-                    <p id="kpTags" class="data"></p>
-                </span>
-                <span class="modal-buttons">
-                    <button type="button" id="addToList" class="modal-btn add-btn">Ajouter à la liste</button>
-                </span>
+        <?php if (isset($errors) && !empty($errors)): ?>
+            <div class="alert alert-danger">
+                <ul>
+                    <?php foreach ($errors as $error): ?>
+                        <li><?= esc($error) ?></li>
+                    <?php endforeach; ?>
+                </ul>
             </div>
-        </div>
+        <?php endif; ?>
 
-        <!-- Liste des destinations -->
-        <div id="selectedList" class="selected-list"></div>
+        <div id="modal">
+            <form action="<?php echo base_url() . 'createTravel'; ?>" method="POST" name="travelForm">
+                <h4 class="title_form">Planifier un nouveau voyage</h4>
+                <?= csrf_field() ?>
 
-        <!-- Stockage des IDs -->
-        <div id="selectedKeypointsContainer"></div>
-        
-        <span class="carrousel-span">
-            <button type="button" class="carrousel-arrow btn-prev">
-                <p>‹</p>
-            </button>
-            <div class="carrousel-container">
-                <div class="carrousel">
-                <?php 
-                    foreach ($keypoints as $keypoint) {
-                        if ($keypoint->is_altered_keypoint == 1) {
-                            continue; // On saute ce keypoint s'il est marqué comme altéré
-                        }
-                        
-                        $city = $keypoint->city()->first();
-                        $cityName = $city ? $city->city_name : '';
-                        $cityCountry = $city ? $city->city_country : '';
-                        // Récupération des tags sous forme de chaîne séparée par des virgules
-                        $tags = $keypoint->tags()->pluck('tag_name')->toArray();
-                        $tagsString = implode(', ', $tags);
-                        
-                        echo "<div class='carrousel-item' 
-                                    data-id='{$keypoint->id}' 
-                                    data-name='" . esc($keypoint->key_point_name) . "' 
-                                    data-price='" . esc($keypoint->key_point_price) . "' 
-                                    data-startdate='" . esc($keypoint->key_point_start_date) . "' 
-                                    data-enddate='" . esc($keypoint->key_point_end_date) . "' 
-                                    data-city='" . esc($cityName) . "' 
-                                    data-country='" . esc($cityCountry) . "'
-                                    data-tag='" . esc($tagsString) . "'
-                                    data-x='" . esc($keypoint->key_point_gps_x) . "' 
-                                    data-y='" . esc($keypoint->key_point_gps_y) . "'>
-                                <img src='data:image/jpeg;base64,{$keypoint->key_point_cover}' 
-                                    alt='" . esc($keypoint->key_point_name) . "' 
-                                    class='carrousel-image'>
-                            </div>";
-                    } ?>
+                <!-- Affichage des prix -->
+                <div class="price-summary">
+                    <p id="individualPrice" class="price"> Prix par personne : 0€ </p>
+                    <p id="totalPrice" class="price"> Prix total pour tous les voyageurs : 0€ </p>
                 </div>
-            </div>
-            <button type="button" class="carrousel-arrow btn-next">
-                <p>›</p>
-            </button>
-        </span>
-      
-        <button type="submit" class="submitBtn" name="submit_travel">Valider</button>
-    </form>
-</div>
+                
+                <span>
+                    <label for="travel_name">Nom du voyage :</label>
+                    <input type="text" name="travel_name" id="travel_name" value="<?= set_value('travel_name') ?>">
+                </span>
+                    
+                <span>
+                    <label for="people_number">Nombre de voyageurs :</label>
+                    <input type="text" name="people_number" id="people_number" value="<?= set_value('people_number') ?>">
+                    <input type="hidden" name="userID" id="userID" value="<?= set_value('userID', $userID) ?>">
+                </span>
 
-<?php if(isset($validation)):?>
-    <div class="alert alert-warning">
-    <?= $validation->listErrors() ?>
-    </div>
-<?php endif;?>
+                <!-- Modale de sélection -->
+                <div id="imageModal" class="modal" style="display: none;">
+                    <div class="modal-content">
+                        <span class="close-modal">&times;</span>
+                        <p id="kpName" class="data"></p>
+                        <br>
+                        <img id="modalImage" class="modal-image" alt="Image du lieu">
+                        <br>
+                        <span class="datas-box">
+                            <p id="kpCity" class="data"></p>
+                            <p id="kpStartDate" class="data"></p>
+                            <p id="kpEndDate" class="data"></p>
+                            <p id="kpPrice" class="data"></p>
+                            <p id="kpTags" class="data"></p>
+                        </span>
+                        <span class="modal-buttons">
+                            <button type="button" id="addToList" class="modal-btn add-btn">Ajouter à la liste</button>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Liste des destinations -->
+                <div id="selectedList" class="selected-list"></div>
+
+                <!-- Stockage des IDs -->
+                <div id="selectedKeypointsContainer"></div>
+                
+                <span class="carrousel-span">
+                    <button type="button" class="carrousel-arrow btn-prev">
+                        <p>‹</p>
+                    </button>
+                    <div class="carrousel-container">
+                        <div class="carrousel">
+                        <?php 
+                            foreach ($keypoints as $keypoint) {
+                                if ($keypoint->is_altered_keypoint == 1) {
+                                    continue; // On saute ce keypoint s'il est marqué comme altéré
+                                }
+                                
+                                $city = $keypoint->city()->first();
+                                $cityName = $city ? $city->city_name : '';
+                                $cityCountry = $city ? $city->city_country : '';
+                                // Récupération des tags sous forme de chaîne séparée par des virgules
+                                $tags = $keypoint->tags()->pluck('tag_name')->toArray();
+                                $tagsString = implode(', ', $tags);
+                                
+                                echo "<div class='carrousel-item' 
+                                            data-id='{$keypoint->id}' 
+                                            data-name='" . esc($keypoint->key_point_name) . "' 
+                                            data-price='" . esc($keypoint->key_point_price) . "' 
+                                            data-startdate='" . esc($keypoint->key_point_start_date) . "' 
+                                            data-enddate='" . esc($keypoint->key_point_end_date) . "' 
+                                            data-city='" . esc($cityName) . "' 
+                                            data-country='" . esc($cityCountry) . "'
+                                            data-tag='" . esc($tagsString) . "'
+                                            data-x='" . esc($keypoint->key_point_gps_x) . "' 
+                                            data-y='" . esc($keypoint->key_point_gps_y) . "'>
+                                        <img src='data:image/jpeg;base64,{$keypoint->key_point_cover}' 
+                                            alt='" . esc($keypoint->key_point_name) . "' 
+                                            class='carrousel-image'>
+                                    </div>";
+                            } ?>
+                        </div>
+                    </div>
+                    <button type="button" class="carrousel-arrow btn-next">
+                        <p>›</p>
+                    </button>
+                </span>
+            
+                <button type="submit" class="submitBtn" name="submit_travel">Valider</button>
+            </form>
+        </div>
+
+        <?php if(isset($validation)):?>
+            <div class="alert alert-warning">
+            <?= $validation->listErrors() ?>
+            </div>
+        <?php endif;?>
+    </body>
+</html>
 
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
